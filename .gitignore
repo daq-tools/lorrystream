@@ -1,0 +1,12 @@
+/.*_cache
+/.idea
+/.venv*
+/dist
+/tmp
+/var
+.DS_Store
+__pycache__
+*.egg-info
+.coverage
+coverage.xml
+/example_*.py

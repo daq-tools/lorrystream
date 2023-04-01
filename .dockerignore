@@ -1,0 +1,12 @@
+*
+!.git
+!examples
+!release/oci/selftest.sh
+!lorrystream
+!tests
+!*.ini
+!*.md
+!*.rst
+!LICENSE
+!MANIFEST.in
+!pyproject.toml
