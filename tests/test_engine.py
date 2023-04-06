@@ -30,10 +30,10 @@ class engine_single_shot:
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
-        await asyncio.sleep(1.50)
+        await asyncio.sleep(0.75)
         logger.info("Stopping engine")
         self.engine.stop()
-        await asyncio.sleep(0.25)
+        await asyncio.sleep(0.15)
         return False
 
 
