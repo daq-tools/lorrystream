@@ -120,7 +120,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push image
-        if: ${{ !contains(github.event.head_commit.author.name, 'dependabot') }}
+        if: ${{ !contains(github.actor, 'dependabot') }}
         uses: docker/build-push-action@v4
         with:
           context: .
