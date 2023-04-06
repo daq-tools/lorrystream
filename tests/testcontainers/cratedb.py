@@ -64,7 +64,7 @@ class CrateDBContainer(DbContainer):
     ) -> None:
         super(CrateDBContainer, self).__init__(image=image, **kwargs)
 
-        self._name = f"testcontainers-cratedb-{os.getpid()}"
+        self._name = "testcontainers-cratedb"  # -{os.getpid()}
         self._command = "-Cdiscovery.type=single-node -Ccluster.routing.allocation.disk.threshold_enabled=false"
 
         self.CRATEDB_USER = user or self.CRATEDB_USER
@@ -111,10 +111,11 @@ class CrateDBContainer(DbContainer):
         docker_client = self.get_docker_client()
 
         # Check if container is already running, and whether it should be reused.
-        containers_running = docker_client.client.api.containers(filters={"name": self._name})
-        start_container = not self.keepalive or not containers_running
+        containers_running = docker_client.client.api.containers(all=True, filters={"name": self._name})
+        start_container = not containers_running
 
         if start_container:
+            logger.info("Starting container")
             self._container = docker_client.run(
                 self.image,
                 command=self._command,
@@ -134,6 +135,6 @@ class CrateDBContainer(DbContainer):
         return self
 
     def stop(self, **kwargs):
-        if not self.CRATEDB_KEEPALIVE:
+        if not self.keepalive:
             return super().stop()
         return None
