@@ -115,7 +115,7 @@ class CrateDBContainer(DbContainer):
         start_container = not containers_running
 
         if start_container:
-            logger.info("Starting container")
+            logger.info("Starting CrateDB")
             self._container = docker_client.run(
                 self.image,
                 command=self._command,
@@ -136,5 +136,6 @@ class CrateDBContainer(DbContainer):
 
     def stop(self, **kwargs):
         if not self.keepalive:
+            logger.info("Stopping CrateDB")
             return super().stop()
         return None
