@@ -26,8 +26,8 @@ Tests
 
 In order to speed up running the test suite multiple times, it is advised to
 keep your auxiliary service instances running. For Mosquitto, this is handled
-automatically by ``pytest-mqtt``. For CrateDB, you will need to define two
-environment variables::
+automatically by ``pytest-mqtt``. For CrateDB, you will need to define an
+environment variable::
 
     export CRATEDB_KEEPALIVE=true
 

@@ -95,6 +95,7 @@ class CrateDBContainer(DbContainer):
 
     def _connect(self):
         # TODO: Better use a network connectivity health check?
+        #       In `testcontainers-java`, there is the `HttpWaitStrategy`.
         wait_for_logs(self, predicate="o.e.n.Node.*started", timeout=MAX_TRIES)
 
     def start(self):
