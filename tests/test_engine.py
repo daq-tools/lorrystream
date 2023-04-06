@@ -37,22 +37,39 @@ class engine_single_shot:
         return False
 
 
-@pytest.fixture(scope="session")
+class CrateDBFixture:
+    def __init__(self):
+        self.cratedb = None
+        self.setup()
+
+    def setup(self):
+        self.cratedb = CrateDBContainer("crate/crate:nightly")
+        self.cratedb.start()
+
+    def finalize(self):
+        self.cratedb.stop()
+
+    def reset(self):
+        database_url = self.cratedb.get_connection_url()
+        sa_engine = sa.create_engine(database_url)
+        with sa_engine.connect() as conn:
+            conn.exec_driver_sql("DROP TABLE IF EXISTS testdrive;")
+
+    def get_connection_url(self, *args, **kwargs):
+        return self.cratedb.get_connection_url(*args, **kwargs)
+
+
+@pytest.fixture(scope="function")
 def cratedb():
-    with CrateDBContainer("crate/crate:nightly") as cratedb:
-        yield cratedb
-
-
-@pytest.fixture(scope="session")
-def reset_database(cratedb):
-    database_url = cratedb.get_connection_url()
-    sa_engine = sa.create_engine(database_url)
-    with sa_engine.connect() as conn:
-        conn.exec_driver_sql("DROP TABLE IF EXISTS testdrive;")
+    fixture = CrateDBFixture()
+    yield fixture
+    fixture.finalize()
 
 
 @pytest.mark.asyncio_cooperative
-async def test_dataframe_to_sql(mosquitto, cratedb, reset_database, capmqtt):
+async def test_dataframe_to_sql(mosquitto, cratedb, capmqtt):
+
+    cratedb.reset()
 
     database_url = cratedb.get_connection_url()
     channel = ChannelFactory("mqtt://localhost/testdrive/%23", f"{database_url}/?table=testdrive").channel()
