@@ -59,7 +59,6 @@ class Decoders:
 
 class ChannelFactory:
     def __init__(self, source: str, sink: t.Union[str, t.Callable]):
-
         self.source: Source
         self.sink: t.Union[None, t.Callable]
 

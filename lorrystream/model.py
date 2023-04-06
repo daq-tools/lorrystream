@@ -40,7 +40,6 @@ class ConnectionString:
         self.url = urlparse(url)
 
     def get_database(self):
-
         # Try to get database name from query parameter.
         database = self.get_query_param("database")
 
