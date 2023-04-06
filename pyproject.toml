@@ -11,7 +11,7 @@ default-tag = "0.0.0"
 
 [project]
 name = "lorrystream"
-description = "A light-weight, polyglot event- or stream-processing system, which can be used as a data backplane-, message relay-, and pipeline-subsystem."
+description = "A lightweight and polyglot stream-processing library, to be used as a data backplane-, message relay-, or pipeline-subsystem."
 readme = "README.rst"
 keywords = [
   "amqp",
