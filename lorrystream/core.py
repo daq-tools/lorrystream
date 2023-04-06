@@ -87,8 +87,8 @@ class ChannelFactory:
         else:
             self.sink = None
 
-        self.batch_size = 3
-        self.timeout = 0.5
+        self.batch_size = 2
+        self.timeout = 0.25
 
     def transform(self, thing: t.Callable):
         self.transformers.append(thing)
