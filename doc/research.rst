@@ -32,6 +32,17 @@ Related libraries
   - https://waltz.finos.org/
   - http://www.waltztechnology.com/flow-diagram/1
 
+- JavaFBP
+
+  - https://github.com/jpaulm/javafbp
+  - https://github.com/jpaulm/fbp-etl
+
+- https://github.com/danielnuriyev/better-etl
+- https://github.com/danielnuriyev/dagster-example
+
+  - https://docs.dagster.io/concepts
+  - https://docs.dagster.io/tutorial
+
 
 **************
 User interface
