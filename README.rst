@@ -7,35 +7,55 @@ LorryStream
 About
 *****
 
-*LorryStream* is a light-weight, polyglot event- or stream-processing system,
-which can be used as a data backplane-, message relay-, and pipeline-subsystem.
-It is based on `Streamz`_ and other modern Python libraries.
+**LorryStream** is a lightweight and polyglot stream-processing library, to
+be used as a data backplane-, message relay-, or pipeline-subsystem, in the
+spirit of `socat`_ and `GStreamer`_. It is based on `Streamz`_, `Dask`_, and
+other Python libraries.
 
 You can use LorryStream to stream data received from the network into storage
 systems, or to relay it to other bus systems. It can be used both as a
 standalone program, and as a library.
 
-It is conceived in the spirit to generalize the corresponding subsystems of
+It is conceived to generalize and improve the corresponding subsystems of
 programs and frameworks like `Kotori`_, `Wetterdienst`_, `Luftdatenpumpe`_,
 `amqp-forward`_, `ttnlogger`_, `Kahn`_, `mqttwarn`_, `FIWARE QuantumLeap`_,
 or `CrateOM`_.
-
-
-Motivation
-==========
-
-Implement a reusable solution, simple to install and operate, that doesn't
-depend on vendor-provided infrastructure, and can easily be embedded into
-existing frameworks and software stacks, or integrated otherwise by running
-it as a sidecar-service.
 
 Details
 =======
 
 - Data sources are message bus systems like AMQP, Kafka, MQTT, ZeroMQ,
-  and network listener endpoints for TCP, HTTP, and WebSocket.
+  and network listener endpoints for TCP, UDP, HTTP, and WebSocket.
 - Data sinks are RDBMS databases supported by SQLAlchemy, or other message
   brokers.
+
+Motivation
+==========
+
+- Implement a reusable solution, simple to install and operate, that doesn't
+  depend on vendor-provided infrastructure, and can easily be embedded into
+  existing frameworks and software stacks, or integrated otherwise by running
+  it as a separate service.
+
+- Help the community and industry to modernize their aging DAQ backend systems
+  designed within the previous decades.
+
+Background
+==========
+
+  Flow-Based Programming (`FBP`_) is a programming paradigm that uses a "data
+  processing factory" metaphor for designing and building applications.
+  It is a special case of `dataflow`_ programming characterized by
+  asynchronous, concurrent processes "under the covers".
+
+  FBP has been found to support improved development time and maintainability,
+  reusability, rapid prototyping, simulation, improved performance, and good
+  communication among developers, maintenance staff, users, systems people, and
+  management - not to mention that FBP naturally takes advantage of multiple
+  cores, without the programmer having to struggle with the intricacies of
+  multitasking.
+
+  -- `Flow-based Programming`_
 
 Caveat
 ======
@@ -194,40 +214,92 @@ save a few keystrokes on subsequent invocations.
 Project information
 *******************
 
+Resources
+=========
+- `Source code <https://github.com/daq-tools/lorrystream>`_
+- `Documentation <https://github.com/daq-tools/lorrystream>`_
+- `Python Package Index (PyPI) <https://pypi.org/project/lorrystream/>`_
+
+Contributions
+=============
+The LorryStream library is an open source project, and is `managed on
+GitHub`_.
+Every kind of contribution, feedback, or patch, is much welcome. `Create an
+issue`_ or submit a patch if you think we should include a new feature, or to
+report or fix a bug.
+
 Development
 ===========
-For installing the project from source, please follow the `development`_
-documentation.
+In order to setup a development environment on your workstation, please head
+over to the `development sandbox`_ documentation. When you see the software
+tests succeed, you should be ready to start hacking.
+
+License
+=======
+The project is licensed under the terms of the MIT license, see `LICENSE`_.
 
 Prior art
 =========
 There are a many other projects which are aiming at similar goals, and where
-LorryStream borrows ideas from.
+LorryStream inherits ideas and inspirations from.
 
-- `Airflow`_
+- `Apache Airflow`_
+- `Apache Flink`_
+- `Armeria`_
+- `Crossbar.io`_
+- `FlowForge`_
+- `Frankenstein Automation Gateway`_
 - `GStreamer`_
 - `ioBroker`_
+- `JavaFBP`_
 - `Kotori`_
 - `Node-RED`_
+- `NoFlo`_
+- `PutsReq`_
+- `rill`_
+- `socat`_
 - `Telegraf`_
 - `Tremor`_
 - `Tributary`_
 
+Credits
+=======
+- `J. Paul Rodker Morrison`_ for discovering/inventing the Flow-Based
+  Programming (FBP) paradigm in the late '60s.
 
-.. _Airflow: https://github.com/apache/airflow
+
+.. _Apache Airflow: https://github.com/apache/airflow
+.. _Apache Flink: https://github.com/apache/flink
+.. _Armeria: https://github.com/line/armeria
 .. _amqp-forward: https://github.com/daq-tools/amqp-forward
 .. _CrateOM: https://crateom.io/
-.. _development: doc/development.rst
+.. _Create an issue: https://github.com/daq-tools/lorrystream/issues
+.. _Crossbar.io: https://crossbar.io/
+.. _Dask: https://github.com/dask/dask
+.. _Dataflow: https://en.wikipedia.org/wiki/Dataflow
+.. _development sandbox: doc/development.rst
+.. _FBP: https://en.wikipedia.org/wiki/Flow-based_programming
+.. _FIWARE QuantumLeap: https://github.com/orchestracities/ngsi-timeseries-api
+.. _Flow-based Programming: https://jpaulm.github.io/fbp/
+.. _FlowForge: https://flowforge.com/
+.. _Frankenstein Automation Gateway: https://github.com/vogler75/automation-gateway
 .. _fsspec: https://pypi.org/project/fsspec/
 .. _GStreamer: https://en.wikipedia.org/wiki/GStreamer
 .. _ioBroker: https://github.com/ioBroker
+.. _J. Paul Rodker Morrison: https://jpaulm.github.io/
+.. _JavaFBP: https://github.com/jpaulm/javafbp
 .. _Kahn: https://github.com/maritime-labs/kahn
 .. _Kotori: https://github.com/daq-tools/kotori
+.. _LICENSE: LICENSE
 .. _Luftdatenpumpe: https://github.com/earthobservations/luftdatenpumpe
+.. _managed on GitHub: https://github.com/daq-tools/lorrystream
 .. _mqttwarn: https://github.com/jpmens/mqttwarn
 .. _Node-RED: https://github.com/node-red
+.. _NoFlo: https://github.com/noflo/noflo
 .. _pandas: https://pandas.pydata.org/
-.. _FIWARE QuantumLeap: https://github.com/orchestracities/ngsi-timeseries-api
+.. _PutsReq: https://github.com/daq-tools/putsreq
+.. _rill: https://github.com/PermaData/rill
+.. _socat: http://www.dest-unreach.org/socat/
 .. _SQLAlchemy: https://pypi.org/project/SQLAlchemy/
 .. _Streamz: https://github.com/python-streamz/streamz
 .. _Telegraf: https://github.com/influxdata/telegraf

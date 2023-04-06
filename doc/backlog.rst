@@ -14,21 +14,29 @@ Iteration 1
 - [x] Docs: Command line vs. library use
 - [x] Rename to LorryStream
 - [x] Add software tests
-- [o] Improve inline docs
 
 
 ***********
 Iteration 2
 ***********
+- [x] Docs: Improve README
+- [o] Provide Docker Compose file for running auxiliary services
+- [o] Sink: SQLite
+- [o] Docs: Provide full example using ``curl``: MQTT to SQLite
 - [o] Make essential parameters configurable
-- [o] Make example programs work
-- [o] Provide example to manipulate data
+- [o] Examples: Make more example programs work
+- [o] Examples: Add example to manipulate data
+- [o] Add more transformers
 - [o] Provide replacement for ``amqp-to-mqtt``
 
   - https://testcontainers-python.readthedocs.io/en/latest/rabbitmq/README.html
-- [o] Example: ``appsink``
-- [o] Add more codecs
-- [o] Provide Docker Compose file for running auxiliary services
+- [o] Provide replacement for ``PutsReq``
+
+  - https://community.hiveeyes.org/t/datenweiterleitung-via-ttn-lora-zu-hiveeyes-bob-und-beep-einrichten/3197
+  - https://community.hiveeyes.org/t/tts-ttn-daten-an-kotori-weiterleiten/1422/27
+  - https://github.com/flow-heater/flow-heater/pull/34
+- [o] Examples: Add ``appsink`` example
+- [o] Improve inline docs
 - [o] Release 0.1.0
 
 
@@ -66,6 +74,19 @@ Iteration 3
   - https://pypi.org/project/network-pipeline/
 - [o] Launch multiple channels per config file
 - [o] Grafana subsystem example
+- [o] Source/Sink: MySQL and S3
+
+  - https://github.com/danielnuriyev/streamz-example
+- [o] Sink: Enable running data into multiple sinks at the same time
+- [o] Logo
+
+  - https://www.alamy.com/stock-photo/kerala-india-decorated-lorry.html?sortBy=relevant
+  - https://www.turbosquid.com/de/3d-models/kerala-lorry-3d-model-1496574
+- [o] Jupyter notebook examples
+
+  - https://github.com/NicolaZomer/Koln_Traffic_Regulator_with_Parallel_Computing#notebook-4-dashboard-and-streaming
+- [o] Audit log
+- [o] Adapters to Airflow and Flink?
 
 
 ***********
