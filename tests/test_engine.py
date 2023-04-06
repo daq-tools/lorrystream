@@ -39,7 +39,6 @@ class engine_single_shot:
 
 @pytest.mark.asyncio_cooperative
 async def test_dataframe_to_sql(mosquitto, cratedb, capmqtt):
-
     cratedb.reset()
 
     database_url = cratedb.get_connection_url()
