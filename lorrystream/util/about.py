@@ -87,8 +87,8 @@ class AboutReport:
 
         subsection("SQLAlchemy")
         print(bullet_item(sqlalchemy.dialects.registry.impls.keys(), label="Dialects built-in"))
-        eps = entry_points(group="sqlalchemy.dialects")
-        dialects = [dialect.name for dialect in eps]
+        eps = entry_points(group="sqlalchemy.dialects")  # type: ignore[call-arg]
+        dialects = [dialect.name for dialect in eps]  # type: ignore[attr-defined]
         print(bullet_item(dialects, label="Dialects 3rd-party"))
         print(bullet_item(sqlalchemy.dialects.plugins.impls.keys(), label="Plugins"))
         print()

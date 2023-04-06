@@ -60,11 +60,11 @@ class CrateDBContainer(DbContainer):
         dbname: Optional[str] = None,
         dialect: str = "crate",
         keepalive: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         super(CrateDBContainer, self).__init__(image=image, **kwargs)
 
-        self._name = "testcontainers-cratedb"
+        self._name = f"testcontainers-cratedb-{os.getpid()}"
         self._command = "-Cdiscovery.type=single-node -Ccluster.routing.allocation.disk.threshold_enabled=false"
 
         self.CRATEDB_USER = user or self.CRATEDB_USER
@@ -123,7 +123,7 @@ class CrateDBContainer(DbContainer):
                 ports=self.ports,
                 name=self._name,
                 volumes=self.volumes,
-                **self._kwargs
+                **self._kwargs,
             )
         else:
             container_id = containers_running[0]["Id"]
