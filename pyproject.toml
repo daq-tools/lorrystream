@@ -78,7 +78,7 @@ dependencies = [
   "influxdb",
   "influxdb-client[ciso]",
   "paho-mqtt",
-  "pandas<1.6",
+  "pandas<2.1",
   "streamz",
   "toolz",
   "yarl<2",
