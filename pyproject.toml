@@ -24,7 +24,7 @@ keywords = [
   "sql",
   "stream",
 ]
-license = { text = "GPL 3, EUPL 1.2" }
+license = { text = "LGPL 3, EUPL 1.2" }
 authors = [
   { name = "Andreas Motl", email = "andreas.motl@panodata.org" },
   { name = "Richard Pobering", email = "richard.pobering@panodata.org" },
@@ -42,7 +42,7 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
   "Intended Audience :: Telecommunications Industry",
-  "License :: OSI Approved :: GNU General Public License v3",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
