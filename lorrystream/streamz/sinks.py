@@ -1,6 +1,5 @@
-# Copyright (c) 2013-2023 The Kotori developers and contributors.
-# This module is part of LorryStream and is released under the MIT License.
-# See LICENSE file for more information.
+# Copyright (c) 2013-2023, The Kotori developers and contributors.
+# Distributed under the terms of a BSD 3-Clause license, see LICENSE.
 
 import logging
 import re
