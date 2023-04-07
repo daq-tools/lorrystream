@@ -1,5 +1,5 @@
 # Copyright (c) 2013-2023, The Kotori developers and contributors.
-# Distributed under the terms of the GPLv3 license, see LICENSE.
+# Distributed under the terms of the LGPLv3 license, see LICENSE.
 
 import json
 import typing as t
