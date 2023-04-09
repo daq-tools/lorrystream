@@ -9,9 +9,11 @@
 import functools
 import logging
 import time
-import pika
+import typing as t
 
+import pika
 from pika.adapters.asyncio_connection import AsyncioConnection
+from pika.channel import Channel
 from pika.exchange_type import ExchangeType
 
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
@@ -19,7 +21,7 @@ LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
 LOGGER = logging.getLogger(__name__)
 
 
-class ExampleConsumer(object):
+class ExampleConsumer:
     """This is an example consumer that will handle unexpected interactions
     with RabbitMQ such as channel and connection closures.
 
@@ -35,9 +37,10 @@ class ExampleConsumer(object):
     EXCHANGE = 'message'
     EXCHANGE_TYPE = ExchangeType.topic
     QUEUE = 'text'
-    ROUTING_KEY = 'example.text'
+    # QUEUE = f"qq-{random.randint(0, 99)}"  # noqa: ERA001
+    ROUTING_KEY = "example.text"
 
-    def __init__(self, amqp_url):
+    def __init__(self, amqp_url, on_message: t.Callable = None):
         """Create a new instance of the consumer class, passing in the AMQP
         URL used to connect to RabbitMQ.
 
@@ -47,15 +50,17 @@ class ExampleConsumer(object):
         self.should_reconnect = False
         self.was_consuming = False
 
-        self._connection = None
-        self._channel = None
+        self._connection: AsyncioConnection
+        self._channel: Channel
         self._closing = False
-        self._consumer_tag = None
+        self._consumer_tag: str
         self._url = amqp_url
         self._consuming = False
         # In production, experiment with higher prefetch values
         # for higher consumer throughput
         self._prefetch_count = 1
+
+        self.deliver_message = on_message
 
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
@@ -114,7 +119,7 @@ class ExampleConsumer(object):
             connection.
 
         """
-        self._channel = None
+        del self._channel
         if self._closing:
             self._connection.ioloop.stop()
         else:
@@ -228,8 +233,10 @@ class ExampleConsumer(object):
 
         """
         queue_name = userdata
-        LOGGER.info('Binding %s to %s with %s', self.EXCHANGE, queue_name,
-                    self.ROUTING_KEY)
+        LOGGER.info(
+            "Binding exchange '%s' to queue '%s' with routing key '%s'",
+            self.EXCHANGE, queue_name, self.ROUTING_KEY
+        )
         cb = functools.partial(self.on_bindok, userdata=queue_name)
         self._channel.queue_bind(
             queue_name,
@@ -323,6 +330,8 @@ class ExampleConsumer(object):
         """
         LOGGER.info('Received message # %s from %s: %s',
                     basic_deliver.delivery_tag, properties.app_id, body)
+        if self.deliver_message:
+            self.deliver_message(_unused_channel, basic_deliver, properties, body)
         self.acknowledge_message(basic_deliver.delivery_tag)
 
     def acknowledge_message(self, delivery_tag):
@@ -420,13 +429,16 @@ class ReconnectingExampleConsumer(object):
                 break
             self._maybe_reconnect()
 
+    def stop(self):
+        self._consumer.stop()
+
     def _maybe_reconnect(self):
         if self._consumer.should_reconnect:
             self._consumer.stop()
             reconnect_delay = self._get_reconnect_delay()
             LOGGER.info('Reconnecting after %d seconds', reconnect_delay)
             time.sleep(reconnect_delay)
-            self._consumer = ExampleConsumer(self._amqp_url)
+            self._consumer = ExampleConsumer(self._amqp_url, on_message=self._on_message)
 
     def _get_reconnect_delay(self):
         if self._consumer.was_consuming:
@@ -439,8 +451,8 @@ class ReconnectingExampleConsumer(object):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-    amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    amqp_url = "amqp://guest:guest@localhost:5672/%2F"
     consumer = ReconnectingExampleConsumer(amqp_url)
     consumer.run()
 

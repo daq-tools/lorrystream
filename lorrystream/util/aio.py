@@ -34,3 +34,26 @@ def tornado_asyncio_run_forever():
             loop.close()
 
     run_asyncio_loop()
+
+
+class AsyncThreadTask:
+    """
+    Starts a function using `asyncio.to_thread()`, with a new asyncio I/O loop.
+    """
+
+    def __init__(self, func, *args, **kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        self.loop = asyncio.new_event_loop()
+
+    def run(self):
+        return self.launch()
+
+    def launch(self):
+        coro = asyncio.to_thread(self._thread)
+        return asyncio.create_task(coro)
+
+    def _thread(self):
+        asyncio.set_event_loop(self.loop)
+        return self.func(*self.args, **self.kwargs)

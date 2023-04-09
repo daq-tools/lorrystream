@@ -12,14 +12,15 @@ be used as a data backplane-, message relay-, or pipeline-subsystem, in the
 spirit of `socat`_ and `GStreamer`_. It is based on `Streamz`_, `Dask`_, and
 other Python libraries.
 
-You can use LorryStream to stream data received from the network into storage
-systems, or to relay it to other bus systems. It can be used both as a
-standalone program, and as a library.
+You can use **LorryStream** to store data received from the network into
+databases, or to relay it back to the network, for example into different
+bus systems. It can be used both as a standalone program, and as a library.
+
+- Use as protocol translator, bridge
 
 It is conceived to generalize and improve the corresponding subsystems of
 programs and frameworks like `Kotori`_, `Wetterdienst`_, `Luftdatenpumpe`_,
-`amqp-forward`_, `ttnlogger`_, `Kahn`_, `mqttwarn`_, `FIWARE QuantumLeap`_,
-or `CrateOM`_.
+`amqp-forward`_, `ttnlogger`_, `Kahn`_, or `mqttwarn`_.
 
 Details
 =======
@@ -236,75 +237,47 @@ tests succeed, you should be ready to start hacking.
 
 License
 =======
-The project is licensed under the terms of the MIT license, see `LICENSE`_.
+The project is licensed under the terms of the LGPL license, see `LICENSE`_.
 
 Prior art
 =========
-There are a many other projects which are aiming at similar goals, and where
-LorryStream inherits ideas and inspirations from.
+We are maintaining a `list of other projects`_ with the same or similar goals
+like LorryStream.
 
-- `Apache Airflow`_
-- `Apache Flink`_
-- `Armeria`_
-- `Crossbar.io`_
-- `FlowForge`_
-- `Frankenstein Automation Gateway`_
-- `GStreamer`_
-- `ioBroker`_
-- `JavaFBP`_
-- `Kotori`_
-- `Node-RED`_
-- `NoFlo`_
-- `PutsReq`_
-- `rill`_
-- `socat`_
-- `Telegraf`_
-- `Tremor`_
-- `Tributary`_
-
-Credits
-=======
+Kudos
+=====
 - `J. Paul Rodker Morrison`_ for discovering/inventing the Flow-Based
-  Programming (FBP) paradigm in the late '60s.
+  Programming (`FBP`_) paradigm in the late '60s.
+
+- `Matthew Rocklin`_, `Christopher J. 'CJ' Wright`_, and `Chinmay Chandak`_
+  for conceiving `Streamz`_.
 
 
-.. _Apache Airflow: https://github.com/apache/airflow
-.. _Apache Flink: https://github.com/apache/flink
-.. _Armeria: https://github.com/line/armeria
+
 .. _amqp-forward: https://github.com/daq-tools/amqp-forward
-.. _CrateOM: https://crateom.io/
+.. _Chinmay Chandak: https://github.com/chinmaychandak
+.. _Christopher J. 'CJ' Wright: https://github.com/CJ-Wright
 .. _Create an issue: https://github.com/daq-tools/lorrystream/issues
-.. _Crossbar.io: https://crossbar.io/
 .. _Dask: https://github.com/dask/dask
 .. _Dataflow: https://en.wikipedia.org/wiki/Dataflow
 .. _development sandbox: doc/development.rst
 .. _FBP: https://en.wikipedia.org/wiki/Flow-based_programming
-.. _FIWARE QuantumLeap: https://github.com/orchestracities/ngsi-timeseries-api
 .. _Flow-based Programming: https://jpaulm.github.io/fbp/
-.. _FlowForge: https://flowforge.com/
-.. _Frankenstein Automation Gateway: https://github.com/vogler75/automation-gateway
 .. _fsspec: https://pypi.org/project/fsspec/
 .. _GStreamer: https://en.wikipedia.org/wiki/GStreamer
-.. _ioBroker: https://github.com/ioBroker
 .. _J. Paul Rodker Morrison: https://jpaulm.github.io/
-.. _JavaFBP: https://github.com/jpaulm/javafbp
 .. _Kahn: https://github.com/maritime-labs/kahn
 .. _Kotori: https://github.com/daq-tools/kotori
 .. _LICENSE: LICENSE
+.. _list of other projects: doc/prior-art.rst
 .. _Luftdatenpumpe: https://github.com/earthobservations/luftdatenpumpe
 .. _managed on GitHub: https://github.com/daq-tools/lorrystream
+.. _Matthew Rocklin: https://github.com/mrocklin
 .. _mqttwarn: https://github.com/jpmens/mqttwarn
-.. _Node-RED: https://github.com/node-red
-.. _NoFlo: https://github.com/noflo/noflo
 .. _pandas: https://pandas.pydata.org/
-.. _PutsReq: https://github.com/daq-tools/putsreq
-.. _rill: https://github.com/PermaData/rill
 .. _socat: http://www.dest-unreach.org/socat/
 .. _SQLAlchemy: https://pypi.org/project/SQLAlchemy/
 .. _Streamz: https://github.com/python-streamz/streamz
-.. _Telegraf: https://github.com/influxdata/telegraf
 .. _testdata: https://github.com/daq-tools/lorrystream/tree/main/tests/testdata
-.. _Tributary: https://github.com/streamlet-dev/tributary
-.. _Tremor: https://www.tremor.rs/
 .. _ttnlogger: https://github.com/daq-tools/ttnlogger
 .. _Wetterdienst: https://github.com/earthobservations/wetterdienst/

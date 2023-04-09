@@ -1,0 +1,4 @@
+{"device": "foo", "temperature": 42.42, "humidity": 84.84}
+{"device": "bar", "temperature": 21.21, "humidity": 80.80}
+{"device": "baz", "temperature": 22.22, "humidity": 79.79}
+{"device": "qux", "temperature": 23.23, "humidity": 78.78}

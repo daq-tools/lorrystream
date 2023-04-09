@@ -60,26 +60,6 @@ def info():
     AboutReport.platform()
 
 
-"""
-@click.command()
-@click.option(
-    "--dburi", type=str, default="crate://localhost:4200", required=False, help="SQLAlchemy database connection URI."
-)
-@click.option("--mode", type=str, default="bulk", required=False, help="Insert mode. Choose one of basic, multi, bulk.")
-@click.option("--num-records", type=int, default=23_000, required=False, help="Number of records to insert.")
-@click.option("--bulk-size", type=int, default=5_000, required=False, help="Bulk size / chunk size.")
-@click.option(
-    "--insertmanyvalues-page-size", type=int, default=1_000, required=False, help="Page size for SA's insertmanyvalues."
-)
-@click.help_option()
-@make_sync
-async def cli(dburi: str, mode: str, num_records: int, bulk_size: int, insertmanyvalues_page_size: int):
-    setup_logging()
-    logger.info("Starting")
-    await run_engine(dburi)
-"""
-
-
 @cli.command(
     "launch",
     help=docstring_format_verbatim(help_launch.__doc__),
@@ -99,7 +79,7 @@ def launch(ctx: click.Context, command: t.Tuple[str]):
     context_settings={"max_content_width": 120},
 )
 @click.argument("source", type=str, required=True)
-@click.argument("sink", type=str, required=True)
+@click.argument("sink", type=str, required=False)
 @click.pass_context
 @make_sync
 async def relay(ctx: click.Context, source: str, sink: str):

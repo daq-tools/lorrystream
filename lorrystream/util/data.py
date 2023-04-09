@@ -2,6 +2,7 @@
 # Distributed under the terms of the LGPLv3 license, see LICENSE.
 
 import json
+import sys
 import typing as t
 
 import pandas as pd
@@ -42,3 +43,23 @@ def df_convert_datetimes(df: pd.DataFrame) -> pd.DataFrame:
             df[date_column] = df[date_column].apply(lambda d: d.isoformat() if pd.notna(d) else None)
 
     return df
+
+
+def get_sqlalchemy_dialects() -> t.List[str]:
+    """
+    Return list of available SQLAlchemy dialects.
+
+    :return:
+    """
+    from importlib.metadata import entry_points
+
+    import sqlalchemy.dialects
+
+    builtins = sqlalchemy.dialects.__all__
+    if sys.version_info >= (3, 10):
+        eps = entry_points(group="sqlalchemy.dialects")
+        more = [dialect.name for dialect in eps]
+    else:
+        more = []
+
+    return sorted(list(builtins) + list(more))
