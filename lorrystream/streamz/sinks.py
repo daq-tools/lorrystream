@@ -1,5 +1,5 @@
 # Copyright (c) 2013-2023, The Kotori developers and contributors.
-# Distributed under the terms of a BSD 3-Clause license, see LICENSE.
+# Distributed under the terms of a BSD-3-Clause license, see LICENSE.
 
 import logging
 import re

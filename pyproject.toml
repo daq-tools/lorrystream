@@ -53,16 +53,30 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Topic :: Adaptive Technologies",
   "Topic :: Communications",
   "Topic :: Database",
   "Topic :: Documentation",
   "Topic :: Education",
+  "Topic :: Internet",
+  "Topic :: Internet :: WWW/HTTP",
   "Topic :: Office/Business",
   "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Embedded Systems",
   "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Object Brokering",
+  "Topic :: Software Development :: Pre-processors",
+  "Topic :: Software Development :: Quality Assurance",
   "Topic :: Software Development :: Testing",
   "Topic :: Software Development :: Version Control",
   "Topic :: System :: Archiving",
+  "Topic :: System :: Benchmark",
+  "Topic :: System :: Clustering",
+  "Topic :: System :: Distributed Computing",
+  "Topic :: System :: Hardware",
+  "Topic :: System :: Logging",
+  "Topic :: System :: Monitoring",
+  "Topic :: System :: Networking",
   "Topic :: System :: Systems Administration",
   "Topic :: Text Processing",
   "Topic :: Utilities",
@@ -71,23 +85,27 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "boltons",
   "click<9",
   "colorama<1",
   "colorlog",
   "dask",
+  "funcy",
   "influxdb",
   "influxdb-client[ciso]",
   "paho-mqtt",
   "pandas<2.3",
-  "sqlalchemy-cratedb",
+  "pika<1.4",
+  "sqlalchemy==2.0.*",
+  "sqlalchemy-cratedb==0.38.0",
   "streamz",
   "toolz",
-  "yarl<2",
 ]
 [project.optional-dependencies]
 develop = [
   "black<25",
   "mypy<1.11",
+  "pika-stubs<0.2",
   "poethepoet<0.28",
   "pyproject-fmt<2.2",
   "ruff<0.5",
@@ -112,11 +130,18 @@ homepage = "https://github.com/daq-tools/lorrystream"
 repository = "https://github.com/daq-tools/lorrystream"
 [project.scripts]
 lorry = "lorrystream.cli:cli"
+[project.entry-points."streamz.sources"]
+from_amqp = "lorrystream.streamz.sources:from_amqp"
+from_mqtt_plus = "lorrystream.streamz.sources:from_mqtt_plus"
 [project.entry-points."streamz.sinks"]
 dataframe_to_sql = "lorrystream.streamz.sinks:dataframe_to_sql"
 
 [tool.black]
 line-length = 120
+
+extend-exclude = [
+  "lorrystream/streamz/amqp.py",
+]
 
 [tool.coverage.run]
 branch = false
@@ -132,6 +157,8 @@ show_missing = true
 [tool.mypy]
 packages = ["lorrystream"]
 exclude = [
+  "lorrystream/streamz/amqp_async.py",
+  "lorrystream/streamz/amqp_blocking.py",
 ]
 check_untyped_defs = true
 ignore_missing_imports = true
@@ -198,6 +225,8 @@ extend-ignore = [
 ]
 
 extend-exclude = [
+  "lorrystream/streamz/amqp_async.py",
+  "lorrystream/streamz/amqp_blocking.py",
   "amqp-to-mqtt.py",
   "workbench.py",
 ]

@@ -1,0 +1,323 @@
+version: "3.8"
+
+networks:
+  lorry-dev:
+    name: lorry-dev
+    driver: bridge
+
+services:
+
+
+  # ------------
+  # Apache Flink
+  # ------------
+  # https://ci.apache.org/projects/flink/flink-docs-master/docs/deployment/resource-providers/standalone/docker/#flink-with-docker-compose
+  flink-jobmanager:
+    command: jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+    image: flink:${FLINK_VERSION}
+    networks:
+      - lorry-dev
+    ports:
+      - "${PORT_FLINK_JOBMANAGER}:${PORT_FLINK_JOBMANAGER}"
+
+    # Define health check for Apache Flink jobmanager.
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:${PORT_FLINK_JOBMANAGER}/overview" ]
+      start_period: 3s
+      interval: 3s
+      timeout: 30s
+      retries: 60
+
+  flink-taskmanager:
+    command: taskmanager
+    image: flink:${FLINK_VERSION}
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 2
+    networks:
+      - lorry-dev
+
+    deploy:
+      replicas: 1
+    depends_on:
+      - flink-jobmanager
+
+
+  # ------------------------
+  # Apache Kafka (Confluent)
+  # ------------------------
+  # https://hub.docker.com/u/confluentinc
+  # https://docs.confluent.io/platform/current/installation/docker/config-reference.html
+  # https://gist.github.com/everpeace/7a317860cab6c7fb39d5b0c13ec2543e
+  # https://github.com/framiere/a-kafka-story/blob/master/step14/docker-compose.yml
+  kafka-zookeeper:
+    image: confluentinc/cp-zookeeper:${CONFLUENT_VERSION}
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${PORT_KAFKA_ZOOKEEPER}
+      KAFKA_OPTS: -Dzookeeper.4lw.commands.whitelist=ruok
+    networks:
+      - lorry-dev
+
+    # Define health check for Zookeeper.
+    healthcheck:
+      # https://github.com/confluentinc/cp-docker-images/issues/827
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost ${PORT_KAFKA_ZOOKEEPER} | grep imok"]
+      start_period: 3s
+      interval: 3s
+      timeout: 30s
+      retries: 60
+
+  kafka-broker:
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION}
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: kafka-zookeeper:${PORT_KAFKA_ZOOKEEPER}
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:${PORT_KAFKA_BROKER_INTERNAL},EXTERNAL://0.0.0.0:${PORT_KAFKA_BROKER_EXTERNAL}
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker:${PORT_KAFKA_BROKER_INTERNAL},EXTERNAL://localhost:${PORT_KAFKA_BROKER_EXTERNAL}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - lorry-dev
+    ports:
+      - "${PORT_KAFKA_BROKER_INTERNAL}:${PORT_KAFKA_BROKER_INTERNAL}"
+      - "${PORT_KAFKA_BROKER_EXTERNAL}:${PORT_KAFKA_BROKER_EXTERNAL}"
+    depends_on:
+      - kafka-zookeeper
+
+    # Define health check for Kafka broker.
+    healthcheck:
+      #test: ps augwwx | egrep "kafka.Kafka"
+      test: ["CMD", "nc", "-vz", "localhost", "${PORT_KAFKA_BROKER_INTERNAL}"]
+      start_period: 3s
+      interval: 3s
+      timeout: 30s
+      retries: 60
+
+  # The Kafka schema registry as well as ksqlDB is not needed for this setup.
+  #kafka-schema-registry:
+  #  image: confluentinc/cp-schema-registry:${CONFLUENT_VERSION}
+  #kafka-ksqldb:
+  #  image: confluentinc/cp-ksqldb-server:${CONFLUENT_VERSION}
+
+
+  # -------
+  # CrateDB
+  # -------
+  # https://hub.docker.com/crate/_crate
+  cratedb:
+    command: ["crate",
+              "-Cdiscovery.type=single-node",
+              "-Ccluster.routing.allocation.disk.threshold_enabled=false",
+             ]
+    environment:
+      CRATE_HEAP_SIZE: 4g
+    image: crate:${CRATEDB_VERSION}
+    networks:
+      - lorry-dev
+    ports:
+      - "${CRATEDB_HTTP_PORT}:${CRATEDB_HTTP_PORT}"
+      - "${CRATEDB_POSTGRESQL_PORT}:${CRATEDB_POSTGRESQL_PORT}"
+
+    # Define health check for CrateDB.
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:${CRATEDB_HTTP_PORT}" ]
+      start_period: 3s
+      interval: 3s
+      timeout: 30s
+      retries: 60
+
+
+  # --------
+  # GarageMQ
+  # --------
+  garagemq:
+    image: xyzj/garagemq:${GARAGEMQ_VERSION}
+    networks:
+      - lorry-dev
+    ports:
+      - "${PORT_GARAGEMQ}:${PORT_GARAGEMQ}"
+
+    # Define health check for Mosquitto.
+    healthcheck:
+      test: [ "CMD", "amqp-consume", "--exclusive", "--queue=foo", "--count=0", "cat" ]
+      start_period: 1s
+      interval: 3s
+      timeout: 10s
+      retries: 60
+
+    deploy:
+      replicas: 0
+
+
+  # ---------
+  # Mosquitto
+  # ---------
+  # https://hub.docker.com/_/eclipse-mosquitto
+  mosquitto:
+    command: ["mosquitto", "-c", "/mosquitto-no-auth.conf"]
+    image: eclipse-mosquitto:${MOSQUITTO_VERSION}
+    networks:
+      - lorry-dev
+    ports:
+      - "${PORT_MOSQUITTO}:${PORT_MOSQUITTO}"
+
+    # Define health check for Mosquitto.
+    healthcheck:
+      test: [ "CMD", "mosquitto_sub", "-v", "-t", "foobar", "-E" ]
+      start_period: 1s
+      interval: 3s
+      timeout: 10s
+      retries: 60
+
+
+  # --------
+  # RabbitMQ
+  # --------
+  # https://hub.docker.com/_/rabbitmq
+  rabbitmq:
+    image: rabbitmq:${RABBITMQ_VERSION}-management
+    networks:
+      - lorry-dev
+    ports:
+      - "${PORT_RABBITMQ_AMQP}:${PORT_RABBITMQ_AMQP}"
+      - "${PORT_RABBITMQ_MANAGEMENT}:${PORT_RABBITMQ_MANAGEMENT}"
+
+    # Define health check for Mosquitto.
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      start_period: 1s
+      interval: 3s
+      timeout: 10s
+      retries: 60
+
+
+  # -------
+  # Bundler
+  # -------
+  # Wait for all defined services to be fully available by probing their health
+  # status, even when using `docker compose up --detach`.
+  # https://marcopeg.com/2019/docker-compose-healthcheck/
+  start-dependencies:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      cratedb:
+        condition: service_healthy
+      flink-jobmanager:
+        condition: service_healthy
+      kafka-broker:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+
+  # -----
+  # Tasks
+  # -----
+
+  # Create database table in CrateDB.
+  create-table:
+    image: westonsteimel/httpie
+    networks: [lorry-dev]
+    command: http "${CRATEDB_HTTP_URL}/_sql?pretty" stmt='CREATE TABLE "taxi_rides" ("payload" OBJECT(DYNAMIC))' --ignore-stdin
+    deploy:
+      replicas: 0
+
+  # Create Kafka topic.
+  create-topic:
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION}
+    networks: [lorry-dev]
+    command: kafka-topics --bootstrap-server kafka-broker:${PORT_KAFKA_BROKER_INTERNAL} --create --if-not-exists --replication-factor 1 --partitions 1 --topic rides
+    deploy:
+      replicas: 0
+
+  # Delete Kafka topic.
+  delete-topic:
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION}
+    networks: [lorry-dev]
+    command: kafka-topics --bootstrap-server kafka-broker:${PORT_KAFKA_BROKER_INTERNAL} --delete --if-exists --topic rides
+    deploy:
+      replicas: 0
+
+  # Acquire Flink job JAR file.
+  download-job:
+    image: apteno/alpine-jq
+    networks: [lorry-dev]
+    command: >
+      wget ${FLINK_JOB_JAR_URL} --output-document /src/${FLINK_JOB_JAR_FILE}
+    deploy:
+      replicas: 0
+
+  # Drop database table in CrateDB.
+  drop-table:
+    image: westonsteimel/httpie
+    networks: [lorry-dev]
+    command: http "${CRATEDB_HTTP_URL}/_sql?pretty" stmt='DROP TABLE "taxi_rides"' --ignore-stdin
+    deploy:
+      replicas: 0
+
+  # Invoke HTTPie via Docker.
+  httpie:
+    image: westonsteimel/httpie
+    networks: [lorry-dev]
+    deploy:
+      replicas: 0
+
+  # List running Flink jobs.
+  list-jobs:
+    image: flink:${FLINK_VERSION}
+    networks: [lorry-dev]
+    command: flink list --jobmanager=flink-jobmanager:${PORT_FLINK_JOBMANAGER}
+    deploy:
+      replicas: 0
+
+  # List job ids of running Flink jobs.
+  # TODO: Currently, this does not work, because `flink-jobmanager` fails to respond to our requests.
+  list-job-ids:
+    image: westonsteimel/httpie
+    networks: [lorry-dev]
+    command: http http://flink-jobmanager:${PORT_FLINK_JOBMANAGER}/jobs/overview Host:localhost --ignore-stdin | jq -r .jobs[].jid
+    deploy:
+      replicas: 0
+
+  # Publish data to Kafka topic.
+  publish-data:
+    image: confluentinc/cp-kafka:${CONFLUENT_VERSION}
+    networks: [lorry-dev]
+    command: kafka-console-producer --bootstrap-server kafka-broker:${PORT_KAFKA_BROKER_INTERNAL} --topic rides
+    deploy:
+      replicas: 0
+
+  # Submit Flink job.
+  submit-job:
+    image: flink:${FLINK_VERSION}
+    networks: [lorry-dev]
+    # Note: Remove `--detach` option to interactively receive stacktrace.
+    command: >
+      flink run
+        --jobmanager=flink-jobmanager:${PORT_FLINK_JOBMANAGER}
+        --detach
+        /src/${FLINK_JOB_JAR_FILE}
+          --kafka.servers kafka-broker:${PORT_KAFKA_BROKER_INTERNAL}
+          --kafka.topic rides
+          --crate.hosts "${CRATEDB_HOST}:${CRATEDB_POSTGRESQL_PORT}"
+          --crate.table taxi_rides
+          --crate.user '${CRATEDB_USERNAME}'
+          --crate.password '${CRATEDB_PASSWORD}'
+    deploy:
+      replicas: 0
+
+  # Subscribe to Kafka topic.
+  subscribe-topic:
+    image: edenhill/kcat:${KCAT_VERSION}
+    networks: [lorry-dev]
+    command: kcat -b kafka-broker -C -t rides -o end
+    deploy:
+      replicas: 0

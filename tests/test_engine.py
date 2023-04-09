@@ -41,7 +41,9 @@ async def test_dataframe_to_sql(mosquitto, cratedb, capmqtt):
     cratedb.reset()
 
     database_url = cratedb.get_connection_url()
-    channel = ChannelFactory("mqtt://localhost/testdrive/%23", f"{database_url}/?table=testdrive").channel()
+    channel = ChannelFactory(
+        "mqtt://localhost/testdrive/%23?content-type=json", f"{database_url}/?table=testdrive"
+    ).channel()
 
     # Run machinery and publish reading.
     async with engine_single_shot(channel):

@@ -5,6 +5,7 @@ import platform
 import sys
 import textwrap
 import typing as t
+from collections import abc
 
 from colorama import Fore, Style
 
@@ -63,7 +64,7 @@ def bullet_item(data: string_or_list, label: str = None):
         label = ""
     else:
         label = f"{label}: "
-    if isinstance(data, (t.List, t.KeysView, t.ValuesView)):
+    if isinstance(data, (list, tuple, abc.KeysView, abc.ValuesView)):
         text = wrap_list(list(data), subsequent_indent="  ")
     else:
         text = data
@@ -86,7 +87,7 @@ class AboutReport:
         import sqlalchemy.dialects
 
         subsection("SQLAlchemy")
-        print(bullet_item(sqlalchemy.dialects.registry.impls.keys(), label="Dialects built-in"))
+        print(bullet_item(sqlalchemy.dialects.__all__, label="Dialects built-in"))
         dialects: t.List[str]
         if sys.version_info >= (3, 10):
             eps = entry_points(group="sqlalchemy.dialects")
