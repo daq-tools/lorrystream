@@ -1,0 +1,15 @@
+- Look into unlocking accessing Singer Taps, if that makes sense?
+  - https://github.com/meltano/meltano
+  - https://github.com/meltano/meltano-codespace-ready
+  - https://github.com/MeltanoLabs/tap-universal-file
+  - https://github.com/MeltanoLabs/tap-postgres
+  - https://docs.meltano.com/concepts/plugins/
+  - https://docs.meltano.com/reference/command-line-interface#elt
+- Pipelinewise
+  - https://transferwise.github.io/pipelinewise/
+  - https://github.com/transferwise/pipelinewise
+  - https://github.com/ets/tap-spreadsheets-anywhere
+  - https://github.com/MeltanoLabs/meltano-map-transform
+  - https://github.com/meltano/squared
+  - https://transferwise.github.io/pipelinewise/installation_guide/running_pipelines.html
+  - https://docs.meltano.com/concepts/plugins#transforms

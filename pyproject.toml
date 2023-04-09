@@ -53,16 +53,30 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Topic :: Adaptive Technologies",
   "Topic :: Communications",
   "Topic :: Database",
   "Topic :: Documentation",
   "Topic :: Education",
+  "Topic :: Internet",
+  "Topic :: Internet :: WWW/HTTP",
   "Topic :: Office/Business",
   "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Embedded Systems",
   "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Object Brokering",
+  "Topic :: Software Development :: Pre-processors",
+  "Topic :: Software Development :: Quality Assurance",
   "Topic :: Software Development :: Testing",
   "Topic :: Software Development :: Version Control",
   "Topic :: System :: Archiving",
+  "Topic :: System :: Benchmark",
+  "Topic :: System :: Clustering",
+  "Topic :: System :: Distributed Computing",
+  "Topic :: System :: Hardware",
+  "Topic :: System :: Logging",
+  "Topic :: System :: Monitoring",
+  "Topic :: System :: Networking",
   "Topic :: System :: Systems Administration",
   "Topic :: Text Processing",
   "Topic :: Utilities",
@@ -71,23 +85,27 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "boltons",
   "click<9",
   "colorama<1",
   "colorlog",
   "crate[sqlalchemy]",
   "dask",
+  "funcy",
   "influxdb",
   "influxdb-client[ciso]",
   "paho-mqtt",
   "pandas<2.1",
+  "pika",
+  "sqlalchemy>=2",
   "streamz",
   "toolz",
-  "yarl<2",
 ]
 [project.optional-dependencies]
 develop = [
   "black<24",
   "mypy==1.5.1",
+  "pika-stubs",
   "poethepoet<0.23",
   "pyproject-fmt<1.1",
   "ruff==0.0.286",
@@ -112,11 +130,18 @@ homepage = "https://github.com/daq-tools/lorrystream"
 repository = "https://github.com/daq-tools/lorrystream"
 [project.scripts]
 lorry = "lorrystream.cli:cli"
+[project.entry-points."streamz.sources"]
+from_amqp = "lorrystream.streamz.sources:from_amqp"
+from_mqtt_plus = "lorrystream.streamz.sources:from_mqtt_plus"
 [project.entry-points."streamz.sinks"]
 dataframe_to_sql = "lorrystream.streamz.sinks:dataframe_to_sql"
 
 [tool.black]
 line-length = 120
+
+extend-exclude = [
+  "lorrystream/streamz/amqp.py",
+]
 
 [tool.coverage.run]
 branch = false

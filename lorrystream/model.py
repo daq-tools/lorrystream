@@ -6,7 +6,13 @@ import operator
 import typing as t
 from urllib.parse import parse_qs, urlparse
 
+import funcy
 from streamz import Sink, Source
+
+from lorrystream.exceptions import InvalidSinkError
+from lorrystream.streamz.model import URL, BusMessage
+
+SinkInputType = t.Union[str, t.Callable, None]
 
 
 @dataclasses.dataclass
@@ -22,7 +28,7 @@ class Channel:
 @dataclasses.dataclass
 class Packet:
     payload: t.Any
-    original: t.Any
+    busmsg: t.Optional[BusMessage] = None
 
     @staticmethod
     def payloads(data):
@@ -61,3 +67,37 @@ class ConnectionString:
             return query[name][0]
         except (KeyError, IndexError):
             return None
+
+
+@dataclasses.dataclass
+class StreamAddress:
+    uri: URL
+    options: t.Dict[str, str] = dataclasses.field(default_factory=dict)
+
+    @classmethod
+    def from_url(cls, url: str):
+        uri = URL(url)
+
+        # Separate URI query parameters used by LorryStream.
+        control_option_names = ["content-type"]
+        options = funcy.project(uri.query_params, control_option_names)
+        query_params = funcy.omit(uri.query_params, control_option_names)
+        uri.query_params = query_params
+
+        return cls(uri=uri, options=options)
+
+    @classmethod
+    def resolve_sink(cls, sink: SinkInputType):
+        """
+        Select sink element of pipeline.
+        """
+
+        if callable(sink):
+            url = f"callable://{sink.__name__}"
+        elif isinstance(sink, str):
+            url = sink
+        else:
+            raise InvalidSinkError(f"Invalid sink: {sink}")
+
+        uri = URL(url)
+        return cls(uri=uri)

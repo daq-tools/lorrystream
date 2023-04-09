@@ -7,10 +7,7 @@ LorryStream backlog
 Iteration 1
 ***********
 - [x] Data model: ``Channel`` and ``Packet``
-- [x] Make it work with MQTT and CrateDB
-- [x] GStreamer-like pipeline definition language
-
-  - https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html
+- [x] Make basic example with MQTT and CrateDB work
 - [x] Docs: Command line vs. library use
 - [x] Rename to LorryStream
 - [x] Add software tests
@@ -20,6 +17,9 @@ Iteration 1
 Iteration 2
 ***********
 - [x] Docs: Improve README
+- [o] https://github.com/rrpelgrim/stream-this-dataset
+- [o] Use stdout as sink when <sink> argument is omitted
+- [o] Flink: https://github.com/apache/flink/blob/release-1.17.0/flink-python/pyflink/examples/datastream/connectors/kafka_avro_format.py
 - [o] Provide Docker Compose file for running auxiliary services
 - [o] Sink: SQLite
 - [o] Docs: Provide full example using ``curl``: MQTT to SQLite
@@ -30,6 +30,8 @@ Iteration 2
 - [o] Provide replacement for ``amqp-to-mqtt``
 
   - https://testcontainers-python.readthedocs.io/en/latest/rabbitmq/README.html
+  - ``amqp-consume --queue=secpi-on_off cat``
+  - ``echo '{"action": "shutdown"}' | amqp-publish --routing-key=secpi-op-m``
 - [o] Provide replacement for ``PutsReq``
 
   - https://community.hiveeyes.org/t/datenweiterleitung-via-ttn-lora-zu-hiveeyes-bob-und-beep-einrichten/3197
@@ -43,6 +45,20 @@ Iteration 2
 ***********
 Iteration 3
 ***********
+- [o] Polars also offers streaming and sinking.
+
+  - https://pola-rs.github.io/polars-book/user-guide/lazy-api/streaming.html
+- [o] Docs
+
+  - https://www.redhat.com/sysadmin/getting-started-socat
+  - http://www.dest-unreach.org/socat/doc/socat.html#EXAMPLES
+  - https://fiware-tutorials.readthedocs.io/en/stable/iot-over-mqtt/
+- [o] Docs: ``curl``
+
+  - https://curl.se/docs/mqtt.html
+  - https://everything.curl.dev/usingcurl/mqtt
+  - https://cogentdatahub.com/connect/mqtt/
+  - https://gist.github.com/jforge/c783e47c430a897a7bddb95b64f8fcc0
 - [o] Development: Code reloading
 - [o] Fallback-based content decoder, Kotori-style; see ``funcy``
 - [o] "First sample" hook to hand over to graphing subsystem
@@ -100,8 +116,6 @@ Iteration 4
 - [o] ``--describe`` pipeline
 - [o] Decoder and transformer subsystem
 - [o] Run with dask-distributed
-- [o] Sink: Prometheus?
-  -- https://github.com/prometheus/client_python#exporting-to-a-pushgateway
 - [o] Source: How to capture streams from different CDC interfaces?
 
   - https://datacater.io/blog/2021-09-02/postgresql-cdc-complete-guide.html
@@ -113,3 +127,43 @@ Iteration 4
   - Unix sockets: https://github.com/Kixunil/ws-unix-framed-bridge
   - Linux IIO
 - [o] Source: Redis, Apache IoTDB
+- [o] Docs: https://github.com/jackersson/gst-python-tutorials
+- [o] Source: https://gstreamer.freedesktop.org/documentation/soup/souphttpsrc.html
+- [o] Source: ``universal_pathlib``
+- [o] Bus: AMQP 1.0 / STOMP (over WebSocket)
+
+  - https://activemq.apache.org/
+  - https://activemq.apache.org/amqp
+  - https://activemq.apache.org/components/artemis/documentation/latest/amqp.html
+  - https://activemq.apache.org/components/classic/
+  - https://stomp.github.io/
+  - https://activemq.apache.org/stomp
+  - https://stackoverflow.com/questions/33954952/amqp-1-0-library-for-python
+  - https://qpid.apache.org/
+  - https://qpid.apache.org/proton/
+  - https://github.com/apache/qpid-proton/tree/main/python/examples
+  - https://pypi.org/project/uamqp/
+  - https://github.com/Azure/azure-uamqp-python
+  - https://access.redhat.com/documentation/en-us/red_hat_amq/6.3/html/client_connectivity_guide/amqppython
+- [o] Bus: NATS
+
+  - https://pypi.org/project/propan/
+  - https://github.com/nats-io/nats.js
+
+- https://cloudevents.io/
+
+  - https://github.com/cloudevents/sdk-python
+  - https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md
+
+- https://pypi.org/project/aiomsg/
+- https://pypi.org/project/arq/
+- [o] Integrate with Tinybird
+  - https://github.com/localstack/verdin
+- https://www.kubeflow.org/docs/components/pipelines/v2/components/
+- XML via JsonML?
+  - https://en.wikipedia.org/wiki/JsonML
+  - https://github.com/stleary/JSON-java/blob/master/src/main/java/org/json/JSONML.java
+  - http://www.jsonml.org/
+  - https://github.com/sasano8/jsonml
+  - https://github.com/sasano8/jsonast
+
