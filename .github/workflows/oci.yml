@@ -63,6 +63,7 @@ jobs:
   oci:
     needs: build_and_test
     runs-on: ubuntu-latest
+    if: ${{ ! (startsWith(github.actor, 'dependabot') || github.event.pull_request.head.repo.fork ) }}
 
     steps:
       - name: Acquire sources
