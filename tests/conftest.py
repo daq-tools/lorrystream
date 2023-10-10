@@ -4,9 +4,9 @@
 
 import pytest
 import sqlalchemy as sa
+from cratedb_toolkit.testing.testcontainers.cratedb import CrateDBContainer
 
 from lorrystream.util.common import setup_logging
-from tests.testcontainers.cratedb import CrateDBContainer
 
 
 class CrateDBFixture:
