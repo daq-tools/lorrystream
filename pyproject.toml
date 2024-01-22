@@ -98,7 +98,7 @@ release = [
   "twine<5",
 ]
 test = [
-  "cratedb-toolkit==0.0.2",
+  "cratedb-toolkit==0.0.3",
   "pytest<8",
   "pytest-asyncio-cooperative",
   "pytest-cov<5",
