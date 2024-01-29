@@ -99,7 +99,7 @@ release = [
 ]
 test = [
   "cratedb-toolkit==0.0.3",
-  "pytest<8",
+  "pytest<9",
   "pytest-asyncio-cooperative",
   "pytest-cov<5",
   "pytest-mqtt",
