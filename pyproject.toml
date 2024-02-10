@@ -98,12 +98,11 @@ release = [
   "twine<5",
 ]
 test = [
-  "cratedb-toolkit==0.0.3",
+  "cratedb-toolkit[testing]==0.0.4",
   "pytest<9",
   "pytest-asyncio-cooperative",
   "pytest-cov<5",
   "pytest-mqtt",
-  "testcontainers",
 ]
 [project.urls]
 changelog = "https://github.com/daq-tools/lorrystream/blob/main/CHANGES.rst"
