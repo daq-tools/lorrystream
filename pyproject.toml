@@ -101,7 +101,7 @@ test = [
   "cratedb-toolkit[testing]==0.0.5",
   "pytest<9",
   "pytest-asyncio-cooperative",
-  "pytest-cov<5",
+  "pytest-cov<6",
   "pytest-mqtt",
 ]
 [project.urls]
