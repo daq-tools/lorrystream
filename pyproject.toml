@@ -102,7 +102,7 @@ test = [
   "pytest<9",
   "pytest-asyncio-cooperative",
   "pytest-cov<6",
-  "pytest-mqtt",
+  "pytest-mqtt<0.4",
 ]
 [project.urls]
 changelog = "https://github.com/daq-tools/lorrystream/blob/main/CHANGES.rst"
