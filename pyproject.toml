@@ -108,8 +108,8 @@ develop = [
   "mypy<1.11",
   "pika-stubs<0.2",
   "poethepoet<0.28",
-  "pyproject-fmt<3",
-  "ruff<0.5",
+  "pyproject-fmt<2.2",
+  "ruff<0.6",
   "validate-pyproject<0.19",
 ]
 release = [
