@@ -7,7 +7,8 @@ MQTT source
 Introduction
 ************
 
-The MQTT protocol...
+The `MQTT`_ protocol is a lightweight, publish-subscribe, machine to machine
+network protocol for message queue/message queuing service.
 
 
 **************
@@ -24,7 +25,7 @@ purpose.
 .. code-block:: console
 
     wget https://github.com/daq-tools/lorrystream/raw/main/docker-compose.yml
-    docker compose up --detach mosquitto cratedb
+    docker compose up --detach cratedb mosquitto
 
 Connectivity
 ============
@@ -91,4 +92,4 @@ supports a wide range of databases. In order learn more details, please visit
 the documentation section about the :ref:`database-sink`.
 
 
-https://en.wikipedia.org/wiki/MQTT
+.. _MQTT: https://en.wikipedia.org/wiki/MQTT
