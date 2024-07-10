@@ -409,16 +409,17 @@ class ExampleConsumer:
             LOGGER.info('Stopped')
 
 
-class ReconnectingExampleConsumer(object):
+class ReconnectingExampleConsumer:
     """This is an example consumer that will reconnect if the nested
     ExampleConsumer indicates that a reconnect is necessary.
 
     """
 
-    def __init__(self, amqp_url):
+    def __init__(self, amqp_url, on_message: t.Callable = None):
         self._reconnect_delay = 0
         self._amqp_url = amqp_url
-        self._consumer = ExampleConsumer(self._amqp_url)
+        self._on_message = on_message
+        self._consumer = ExampleConsumer(self._amqp_url, on_message=self._on_message)
 
     def run(self):
         while True:

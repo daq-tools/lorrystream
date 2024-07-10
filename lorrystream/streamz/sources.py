@@ -46,10 +46,13 @@ class FromAmqp(from_q):
         Passed to the client's ``connect()`` method
     """
 
-    def __init__(self, uri: str, **kwargs):
+    def __init__(self, uri: str, reconnect: bool = True, **kwargs):
         self.uri = uri
-        self.consumer = ReconnectingExampleConsumer(self.uri, on_message=self._on_message)
         self.stopped = True
+        consumer_class: t.Callable = ExampleConsumer
+        if reconnect:
+            consumer_class = ReconnectingExampleConsumer
+        self.consumer = consumer_class(self.uri, on_message=self._on_message)
         super().__init__(q=queue.Queue(), **kwargs)
 
     def _delivery_to_dict(self, basic_deliver):

@@ -11,6 +11,7 @@ from streamz import Sink, Source
 
 from lorrystream.exceptions import InvalidSinkError
 from lorrystream.streamz.model import URL, BusMessage
+from lorrystream.util.data import asbool
 
 SinkInputType = t.Union[str, t.Callable, None]
 
@@ -79,12 +80,16 @@ class StreamAddress:
         uri = URL(url)
 
         # Separate URI query parameters used by LorryStream.
-        control_option_names = ["content-type"]
+        control_option_names = ["content-type", "reconnect"]
         options = funcy.project(uri.query_params, control_option_names)
         query_params = funcy.omit(uri.query_params, control_option_names)
         uri.query_params = query_params
 
         return cls(uri=uri, options=options)
+
+    @property
+    def reconnect(self):
+        return asbool(self.options.get("reconnect", True))
 
     @classmethod
     def resolve_sink(cls, sink: SinkInputType):
