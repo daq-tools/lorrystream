@@ -56,11 +56,13 @@ def get_sqlalchemy_dialects() -> t.List[str]:
     import sqlalchemy.dialects
 
     builtins = sqlalchemy.dialects.__all__
+    more: t.List
     if sys.version_info >= (3, 10):
         eps = entry_points(group="sqlalchemy.dialects")
         more = [dialect.name for dialect in eps]
     else:
-        more = []
+        eps = entry_points()
+        more = [dialect[0].name for dialect in eps.values() if dialect[0].group == "sqlalchemy.dialects"]
 
     return sorted(list(builtins) + list(more))
 

@@ -171,7 +171,7 @@ class ChannelFactory:
 
             self.sink_element = self.pipeline.stream.dataframe_to_sql(dburi=str(self.sink_address.uri))
         else:
-            raise InvalidSinkError(f"Invalid sink location: {location}")
+            raise InvalidSinkError(f"Invalid sink location: {location}. Scheme unknown: {uri.scheme}.")
 
     def transform(self, thing: t.Callable) -> "ChannelFactory":
         self.transformers.append(thing)
