@@ -124,7 +124,7 @@ class ChannelFactory:
         uri = self.source_address.uri
         if uri.scheme.startswith("amqp"):
             logger.info("Subscribing to AMQP")
-            self.source_element = Stream.from_amqp(str(uri), reconnect=self.source_address.reconnect)
+            self.source_element = Stream.from_amqp(self.source_address)
             self.transformers.append(Decoders.decode_busmessage)
 
         elif uri.scheme.startswith("mqtt"):

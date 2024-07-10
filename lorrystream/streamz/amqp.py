@@ -16,12 +16,14 @@ from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.channel import Channel
 from pika.exchange_type import ExchangeType
 
+from lorrystream.model import StreamAddress
+
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 
 
-class ExampleConsumer:
+class AMQPAdapter:
     """This is an example consumer that will handle unexpected interactions
     with RabbitMQ such as channel and connection closures.
 
@@ -34,20 +36,23 @@ class ExampleConsumer:
     commands that were issued and that should surface in the output as well.
 
     """
-    EXCHANGE = 'message'
-    EXCHANGE_TYPE = ExchangeType.direct
-    QUEUE = 'text'
-    # QUEUE = f"qq-{random.randint(0, 99)}"  # noqa: ERA001
-    ROUTING_KEY = "example.text"
 
-    def __init__(self, amqp_url, on_message: t.Callable = None):
-        """Create a new instance of the consumer class, passing in the AMQP
-        URL used to connect to RabbitMQ.
-
-        :param str amqp_url: The AMQP url to connect with
-
+    def __init__(self, address: StreamAddress, on_message: t.Callable = None):
+        """
+        Create and maintain a connection to an AMQP broker.
         """
         LOGGER.info('Creating consumer')
+
+        self.address = address
+
+        if "queue" not in self.address.options:
+            raise ValueError("Consuming from AMQP requires a queue name")
+
+        self.queue_name = self.address.options["queue"]
+        self.exchange_name = self.address.options.get("exchange", "")
+        self.exchange_type = self.address.options.get("exchange-type", "direct")
+        self.routing_key = self.address.options.get("routing-key")
+
         self.should_reconnect = False
         self.was_consuming = False
 
@@ -55,13 +60,21 @@ class ExampleConsumer:
         self._channel: Channel
         self._closing = False
         self._consumer_tag: str
-        self._url = amqp_url
         self._consuming = False
         # In production, experiment with higher prefetch values
         # for higher consumer throughput
-        self._prefetch_count = 1
+        self._prefetch_count = 1_000
 
         self.deliver_message = on_message
+
+    def needs_setup(self, key: str):
+        """
+        Whether the URL query parameter ``setup={exchange,queue,bind}`` was specified.
+        """
+        if "setup" in self.address.options:
+            setup = self.address.options["setup"]
+            return key in setup
+        return False
 
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
@@ -71,9 +84,9 @@ class ExampleConsumer:
         :rtype: pika.adapters.asyncio_connection.AsyncioConnection
 
         """
-        LOGGER.info('Connecting to %s', self._url)
+        LOGGER.info('Connecting to %s', self.address.uri)
         return AsyncioConnection(
-            parameters=pika.URLParameters(self._url),
+            parameters=pika.URLParameters(str(self.address.uri)),
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_open_error,
             on_close_callback=self.on_connection_closed)
@@ -151,7 +164,7 @@ class ExampleConsumer:
         """This method is invoked by pika when the channel has been opened.
         The channel object is passed in so we can make use of it.
 
-        Since the channel is now open, we'll declare the exchange to use.
+        Since the channel is now open, we'll may declare the exchange to use.
 
         :param pika.channel.Channel channel: The channel object
 
@@ -159,7 +172,7 @@ class ExampleConsumer:
         LOGGER.info('Channel opened')
         self._channel = channel
         self.add_on_channel_close_callback()
-        self.setup_exchange(self.EXCHANGE)
+        self.setup_exchange()
 
     def add_on_channel_close_callback(self):
         """This method tells pika to call the on_channel_closed method if
@@ -183,23 +196,23 @@ class ExampleConsumer:
         LOGGER.warning('Channel %i was closed: %s', channel, reason)
         self.close_connection()
 
-    def setup_exchange(self, exchange_name):
-        """Setup the exchange on RabbitMQ by invoking the Exchange.Declare RPC
+    def setup_exchange(self):
+        """Set up the exchange on RabbitMQ by invoking the Exchange.Declare RPC
         command. When it is complete, the on_exchange_declareok method will
         be invoked by pika.
-
-        :param str|unicode exchange_name: The name of the exchange to declare
-
         """
-        LOGGER.info('Declaring exchange: %s', exchange_name)
         # Note: using functools.partial is not required, it is demonstrating
         # how arbitrary data can be passed to the callback when it is called
-        cb = functools.partial(
-            self.on_exchange_declareok, userdata=exchange_name)
-        self._channel.exchange_declare(
-            exchange=exchange_name,
-            exchange_type=self.EXCHANGE_TYPE,
-            callback=cb)
+        if self.needs_setup("exchange"):
+            LOGGER.info('Declaring exchange: %s', self.exchange_name)
+            cb = functools.partial(
+                self.on_exchange_declareok, userdata=self.exchange_name)
+            self._channel.exchange_declare(
+                exchange=self.exchange_name,
+                exchange_type=ExchangeType(self.exchange_type),
+                callback=cb)
+        else:
+            self.setup_queue()
 
     def on_exchange_declareok(self, _unused_frame, userdata):
         """Invoked by pika when RabbitMQ has finished the Exchange.Declare RPC
@@ -210,53 +223,71 @@ class ExampleConsumer:
 
         """
         LOGGER.info('Exchange declared: %s', userdata)
-        self.setup_queue(self.QUEUE)
+        self.setup_queue()
 
-    def setup_queue(self, queue_name):
+    def setup_queue(self):
         """Setup the queue on RabbitMQ by invoking the Queue.Declare RPC
         command. When it is complete, the on_queue_declareok method will
         be invoked by pika.
 
-        :param str|unicode queue_name: The name of the queue to declare.
-
         """
-        LOGGER.info('Declaring queue %s', queue_name)
-        cb = functools.partial(self.on_queue_declareok, userdata=queue_name)
-        self._channel.queue_declare(queue=queue_name, callback=cb)
+        if self.needs_setup("queue"):
+            LOGGER.info('Declaring queue %s', self.queue_name)
+            cb = functools.partial(self.on_queue_declareok, userdata=self.queue_name)
+            self._channel.queue_declare(queue=self.queue_name, callback=cb)
+        else:
+            self.setup_bind()
 
     def on_queue_declareok(self, _unused_frame, userdata):
         """Method invoked by pika when the Queue.Declare RPC call made in
-        setup_queue has completed. In this method we will bind the queue
-        and exchange together with the routing key by issuing the Queue.Bind
-        RPC command. When this command is complete, the on_bindok method will
-        be invoked by pika.
+        setup_queue has completed. We may advance to binding that queue.
 
         :param pika.frame.Method _unused_frame: The Queue.DeclareOk frame
         :param str|unicode userdata: Extra user data (queue name)
 
         """
-        queue_name = userdata
-        LOGGER.info('Queue declared: %s', queue_name)
-        LOGGER.info(
-            "Binding exchange '%s' to queue '%s' with routing key '%s'",
-            self.EXCHANGE, queue_name, self.ROUTING_KEY
-        )
-        cb = functools.partial(self.on_bindok, userdata=queue_name)
-        self._channel.queue_bind(
-            queue_name,
-            self.EXCHANGE,
-            routing_key=self.ROUTING_KEY,
-            callback=cb)
+        LOGGER.info('Queue declared: %s', self.queue_name)
+        self.setup_bind()
+
+    def setup_bind(self):
+        """
+        Bind the queue and exchange together with the routing key, by issuing
+        the Queue.Bind RPC command. When this command is complete, the
+        on_bindok method will be invoked by pika.
+        :return:
+        """
+        if self.needs_setup("bind"):
+            LOGGER.info(
+                "Binding queue '%s' to exchange '%s' with routing key '%s'",
+                self.queue_name, self.exchange_name, self.routing_key
+            )
+            if self.routing_key is None:
+                raise ValueError("When binding a queue, the routing key is required")
+            cb = functools.partial(self.on_bindok, userdata=self.queue_name)
+            self._channel.queue_bind(
+                self.queue_name,
+                self.exchange_name,
+                routing_key=self.routing_key,
+                callback=cb)
+        else:
+            self.subscribe()
 
     def on_bindok(self, _unused_frame, userdata):
         """Invoked by pika when the Queue.Bind method has completed. At this
-        point we will set the prefetch count for the channel.
+        point, we will advance to actually consume messages.
 
         :param pika.frame.Method _unused_frame: The Queue.BindOk response frame
         :param str|unicode userdata: Extra user data (queue name)
 
         """
         LOGGER.info('Queue bound: %s', userdata)
+        self.subscribe()
+
+    def subscribe(self):
+        """
+        Actually start consuming messages, after setting the prefetch size for this channel.
+        """
+        LOGGER.info('Subscribing')
         self.set_qos()
 
     def set_qos(self):
@@ -272,8 +303,7 @@ class ExampleConsumer:
 
     def on_basic_qos_ok(self, _unused_frame):
         """Invoked by pika when the Basic.QoS method has completed. At this
-        point we will start consuming messages by calling start_consuming
-        which will invoke the needed RPC commands to start the process.
+        point, we will start consuming messages.
 
         :param pika.frame.Method _unused_frame: The Basic.QosOk response frame
 
@@ -282,7 +312,9 @@ class ExampleConsumer:
         self.start_consuming()
 
     def start_consuming(self):
-        """This method sets up the consumer by first calling
+        """Start consuming messages.
+
+        This method sets up the consumer by first calling
         add_on_cancel_callback so that the object is notified if RabbitMQ
         cancels the consumer. It then issues the Basic.Consume RPC command
         which returns the consumer tag that is used to uniquely identify the
@@ -295,8 +327,7 @@ class ExampleConsumer:
         self.add_on_cancel_callback()
         LOGGER.info('Start consuming')
         self._consumer_tag = self._channel.basic_consume(
-            self.QUEUE, self.on_message)
-        self.was_consuming = True
+            self.queue_name, self.on_message)
         self._consuming = True
 
     def add_on_cancel_callback(self):
@@ -334,6 +365,7 @@ class ExampleConsumer:
         :param bytes body: The message body
 
         """
+        self.was_consuming = True
         LOGGER.info('Received message # %s from %s: %s',
                     basic_deliver.delivery_tag, properties.app_id, body)
         if self.deliver_message:
@@ -418,17 +450,20 @@ class ExampleConsumer:
             LOGGER.info('Stopped consumer')
 
 
-class ReconnectingExampleConsumer:
+class ReconnectingAMQPAdapter:
     """This is an example consumer that will reconnect if the nested
-    ExampleConsumer indicates that a reconnect is necessary.
+    AMQPAdapter indicates that a reconnect is necessary.
 
     """
 
-    def __init__(self, amqp_url, on_message: t.Callable = None):
+    def __init__(self, address: StreamAddress, on_message: t.Callable = None):
+        self.address = address
         self._reconnect_delay = 0
-        self._amqp_url = amqp_url
         self._on_message = on_message
-        self._consumer = ExampleConsumer(self._amqp_url, on_message=self._on_message)
+        self._consumer = self.consumer_factory()
+
+    def consumer_factory(self):
+        return AMQPAdapter(address=self.address, on_message=self._on_message)
 
     def run(self):
         while True:
@@ -448,7 +483,7 @@ class ReconnectingExampleConsumer:
             reconnect_delay = self._get_reconnect_delay()
             LOGGER.info('Reconnecting after %d seconds', reconnect_delay)
             time.sleep(reconnect_delay)
-            self._consumer = ExampleConsumer(self._amqp_url, on_message=self._on_message)
+            self._consumer = self.consumer_factory()
 
     def _get_reconnect_delay(self):
         if self._consumer.was_consuming:
@@ -461,9 +496,16 @@ class ReconnectingExampleConsumer:
 
 
 def main():
+    """
+    Demo how to use ``StreamAddress`` and ``ReconnectingAMQPAdapter`` to create a pipeline source element.
+
+    DATA='{"id": "device-42", "temperature": 42.42, "humidity": "84.84"}'
+    echo "${DATA}" | amqp-publish --url='amqp://guest:guest@localhost:5672/%2F' --routing-key=queue-43
+    """
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    amqp_url = "amqp://guest:guest@localhost:5672/%2F"
-    consumer = ReconnectingExampleConsumer(amqp_url)
+    amqp_url = "amqp://guest:guest@localhost:5672/%2F?queue=queue-43&setup=queue"
+    address = StreamAddress.from_url(amqp_url)
+    consumer = ReconnectingAMQPAdapter(address=address)
     consumer.run()
 
 

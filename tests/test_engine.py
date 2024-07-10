@@ -53,7 +53,7 @@ async def test_amqp_to_sql(rabbitmq: t.Tuple[pika.BlockingConnection, RabbitMQCo
     database_url = cratedb.get_connection_url()
 
     channel = ChannelFactory(
-        source=f"{amqp_url}/%2F?content-type=json&reconnect=false",
+        source=f"{amqp_url}/%2F?exchange=t-exchange&queue=t-queue&routing-key=t-topic&setup=exchange,queue,bind&content-type=json&reconnect=false",
         sink=f"{database_url}/?table=testdrive-amqp",
     ).channel()
 
@@ -63,8 +63,8 @@ async def test_amqp_to_sql(rabbitmq: t.Tuple[pika.BlockingConnection, RabbitMQCo
     # Run machinery and publish reading.
     amqp_channel = rabbitmq_connection.channel()
     async with engine_single_shot(channel):
-        amqp_channel.basic_publish(exchange="message", routing_key="example.text", body=payload)
-        amqp_channel.basic_publish(exchange="message", routing_key="example.text", body=payload)
+        amqp_channel.basic_publish(exchange="t-exchange", routing_key="t-topic", body=payload)
+        amqp_channel.basic_publish(exchange="t-exchange", routing_key="t-topic", body=payload)
         rabbitmq_connection.process_data_events(0.01)
 
     # Validate data in storage system.

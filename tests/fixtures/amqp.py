@@ -18,7 +18,7 @@ class RabbitMQContainerPlus(KeepaliveContainer, RabbitMQContainer):
 
 
 @pytest.fixture
-def rabbitmq(request: FixtureRequest) -> t.Generator[RabbitMQContainer, None, None]:
+def rabbitmq_service(request: FixtureRequest) -> t.Generator[RabbitMQContainer, None, None]:
     config = RabbitMQContainerPlus()
     credentials = pika.PlainCredentials(username="guest", password="guest")  # noqa: S106
     with config as container:
@@ -30,3 +30,14 @@ def rabbitmq(request: FixtureRequest) -> t.Generator[RabbitMQContainer, None, No
             )
         )
         yield container, connection
+
+
+@pytest.fixture
+def rabbitmq(rabbitmq_service) -> t.Generator[RabbitMQContainer, None, None]:
+    _, connection = rabbitmq_service
+    channel = connection.channel()
+    channel.queue_delete("t-queue")
+    channel.exchange_delete("t-exchange")
+    connection.process_data_events(0.01)
+    channel.close()
+    yield rabbitmq_service

@@ -11,7 +11,7 @@ from streamz import Sink, Source
 
 from lorrystream.exceptions import InvalidSinkError
 from lorrystream.streamz.model import URL, BusMessage
-from lorrystream.util.data import asbool
+from lorrystream.util.data import asbool, split_list
 
 SinkInputType = t.Union[str, t.Callable, None]
 
@@ -78,18 +78,42 @@ class StreamAddress:
     @classmethod
     def from_url(cls, url: str):
         uri = URL(url)
+        options = cls.extract_options(uri)
+        return cls(uri=uri, options=options)
 
+    @staticmethod
+    def extract_options(uri: URL) -> t.Dict[str, str]:
         # Separate URI query parameters used by LorryStream.
-        control_option_names = ["content-type", "reconnect"]
+        control_option_names = [
+            # General options.
+            "content-type",
+            "reconnect",
+            # AMQP options.
+            "exchange",
+            "exchange-type",
+            "queue",
+            "routing-key",
+            "setup",
+        ]
+        list_options = [
+            "setup",
+        ]
+        boolean_options = [
+            "reconnect",
+        ]
         options = funcy.project(uri.query_params, control_option_names)
         query_params = funcy.omit(uri.query_params, control_option_names)
         uri.query_params = query_params
 
-        return cls(uri=uri, options=options)
+        for list_option in list_options:
+            if list_option in options:
+                options[list_option] = split_list(options[list_option])
 
-    @property
-    def reconnect(self):
-        return asbool(self.options.get("reconnect", True))
+        for boolean_option in boolean_options:
+            if boolean_option in options:
+                options[boolean_option] = asbool(options[boolean_option])
+
+        return options
 
     @classmethod
     def resolve_sink(cls, sink: SinkInputType):

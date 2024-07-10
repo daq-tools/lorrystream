@@ -79,3 +79,9 @@ def asbool(obj: t.Any) -> bool:
         else:
             raise ValueError("String is not true/false: %r" % obj)
     return bool(obj)
+
+
+def split_list(value: str, delimiter: str = ",") -> t.List[str]:
+    if value is None:
+        return []
+    return [c.strip() for c in value.split(delimiter)]

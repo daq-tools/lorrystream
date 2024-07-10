@@ -1,6 +1,5 @@
 # Copyright (c) 2013-2024, The Kotori developers and contributors.
 # Distributed under the terms of a BSD-3-Clause license, see LICENSE.
-import json
 import logging
 import queue
 import typing as t
@@ -8,7 +7,8 @@ from collections import OrderedDict
 
 from streamz import Stream, from_mqtt, from_q
 
-from lorrystream.streamz.amqp import ExampleConsumer, ReconnectingExampleConsumer
+from lorrystream.model import StreamAddress
+from lorrystream.streamz.amqp import AMQPAdapter, ReconnectingAMQPAdapter
 from lorrystream.streamz.model import URL, BusMessage
 from lorrystream.util.aio import AsyncThreadTask
 
@@ -31,13 +31,13 @@ class FromAmqp(from_q):
     :param reconnect: bool
     """
 
-    def __init__(self, uri: str, reconnect: bool = True, **kwargs):
-        self.uri = uri
+    def __init__(self, address: StreamAddress, **kwargs):
+        self.address = address
         self.stopped = True
-        consumer_class: t.Callable = ExampleConsumer
-        if reconnect:
-            consumer_class = ReconnectingExampleConsumer
-        self.consumer = consumer_class(self.uri, on_message=self._on_message)
+        consumer_class: t.Callable = AMQPAdapter
+        if self.address.options.get("reconnect", True):
+            consumer_class = ReconnectingAMQPAdapter
+        self.consumer = consumer_class(address=address, on_message=self._on_message)
         super().__init__(q=queue.Queue(), **kwargs)
 
     def _delivery_to_dict(self, basic_deliver):

@@ -5,7 +5,7 @@ import pytest
 
 from lorrystream.util.common import setup_logging
 
-from .fixtures.amqp import rabbitmq  # noqa: F401
+from .fixtures.amqp import rabbitmq, rabbitmq_service  # noqa: F401
 
 
 @pytest.fixture
