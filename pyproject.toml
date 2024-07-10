@@ -108,7 +108,7 @@ develop = [
   "mypy<1.11",
   "pika-stubs<0.2",
   "poethepoet<0.28",
-  "pyproject-fmt<2",
+  "pyproject-fmt<3",
   "ruff<0.5",
   "validate-pyproject<0.19",
 ]
