@@ -42,13 +42,14 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
   "Intended Audience :: Telecommunications Industry",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Operating System :: Unix",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -107,7 +108,7 @@ develop = [
   "mypy<1.11",
   "pika-stubs<0.2",
   "poethepoet<0.28",
-  "pyproject-fmt<2.2",
+  "pyproject-fmt<2",
   "ruff<0.5",
   "validate-pyproject<0.19",
 ]
@@ -131,11 +132,11 @@ homepage = "https://github.com/daq-tools/lorrystream"
 repository = "https://github.com/daq-tools/lorrystream"
 [project.scripts]
 lorry = "lorrystream.cli:cli"
+[project.entry-points."streamz.sinks"]
+dataframe_to_sql = "lorrystream.streamz.sinks:dataframe_to_sql"
 [project.entry-points."streamz.sources"]
 from_amqp = "lorrystream.streamz.sources:from_amqp"
 from_mqtt_plus = "lorrystream.streamz.sources:from_mqtt_plus"
-[project.entry-points."streamz.sinks"]
-dataframe_to_sql = "lorrystream.streamz.sinks:dataframe_to_sql"
 
 [tool.black]
 line-length = 120
