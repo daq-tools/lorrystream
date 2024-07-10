@@ -1,6 +1,6 @@
-# Copyright (c) 2013-2023, The Kotori developers and contributors.
+# Copyright (c) 2013-2024, The Kotori developers and contributors.
 # Distributed under the terms of a BSD-3-Clause license, see LICENSE.
-import asyncio
+import json
 import logging
 import queue
 import typing as t
@@ -8,9 +8,8 @@ from collections import OrderedDict
 
 from streamz import Stream, from_mqtt, from_q
 
-from lorrystream.streamz.amqp import ReconnectingExampleConsumer
-from lorrystream.streamz.amqp_blocking import AMQPAdapter
-from lorrystream.streamz.model import URL, BusMessage, BusMessageConnection, BusMessageData
+from lorrystream.streamz.amqp import ExampleConsumer, ReconnectingExampleConsumer
+from lorrystream.streamz.model import URL, BusMessage
 from lorrystream.util.aio import AsyncThreadTask
 
 logger = logging.getLogger(__name__)
@@ -21,29 +20,15 @@ class FromAmqp(from_q):
     """Read from AMQP source
 
     See https://en.wikipedia.org/wiki/AMQP for a description of the protocol
-    and its uses.
-
-    TODO: See also ``sinks.to_amqp``.
-
-    Requires ``pika``
-
-    The outputs are ``paho.mqtt.client.MQTTMessage`` instances, which each have
-    attributes timestamp, payload, topic, ...
-
-    NB: paho.mqtt.python runs on its own thread in this implementation. We may
-    wish to instead call client.loop() directly
+    and its uses. Requires the ``pika`` package.
 
     - https://www.rabbitmq.com/uri-spec.html
     - https://www.rabbitmq.com/uri-query-parameters.html
 
-    :param host: str
-    :param port: int
-    :param topic: str
-        (May in the future support a list of topics)
-    :param keepalive: int
-        See mqtt docs - to keep the channel alive
-    :param client_kwargs:
-        Passed to the client's ``connect()`` method
+    TODO: See also ``sinks.to_amqp``.
+
+    :param uri: str
+    :param reconnect: bool
     """
 
     def __init__(self, uri: str, reconnect: bool = True, **kwargs):

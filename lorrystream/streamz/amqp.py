@@ -35,7 +35,7 @@ class ExampleConsumer:
 
     """
     EXCHANGE = 'message'
-    EXCHANGE_TYPE = ExchangeType.topic
+    EXCHANGE_TYPE = ExchangeType.direct
     QUEUE = 'text'
     # QUEUE = f"qq-{random.randint(0, 99)}"  # noqa: ERA001
     ROUTING_KEY = "example.text"
@@ -47,6 +47,7 @@ class ExampleConsumer:
         :param str amqp_url: The AMQP url to connect with
 
         """
+        LOGGER.info('Creating consumer')
         self.should_reconnect = False
         self.was_consuming = False
 
@@ -121,6 +122,7 @@ class ExampleConsumer:
         """
         del self._channel
         if self._closing:
+            LOGGER.info('Connection closed, stopping i/o loop')
             self._connection.ioloop.stop()
         else:
             LOGGER.warning('Connection closed, reconnect necessary: %s', reason)
@@ -132,6 +134,7 @@ class ExampleConsumer:
         ioloop.
 
         """
+        LOGGER.info('Signalling reconnect')
         self.should_reconnect = True
         self.stop()
 
@@ -233,6 +236,7 @@ class ExampleConsumer:
 
         """
         queue_name = userdata
+        LOGGER.info('Queue declared: %s', queue_name)
         LOGGER.info(
             "Binding exchange '%s' to queue '%s' with routing key '%s'",
             self.EXCHANGE, queue_name, self.ROUTING_KEY
@@ -262,6 +266,7 @@ class ExampleConsumer:
         with different prefetch values to achieve desired performance.
 
         """
+        LOGGER.info('Setting QOS to: %d', self._prefetch_count)
         self._channel.basic_qos(
             prefetch_count=self._prefetch_count, callback=self.on_basic_qos_ok)
 
@@ -288,6 +293,7 @@ class ExampleConsumer:
         """
         LOGGER.info('Issuing consumer related RPC commands')
         self.add_on_cancel_callback()
+        LOGGER.info('Start consuming')
         self._consumer_tag = self._channel.basic_consume(
             self.QUEUE, self.on_message)
         self.was_consuming = True
@@ -384,6 +390,7 @@ class ExampleConsumer:
         starting the IOLoop to block and allow the AsyncioConnection to operate.
 
         """
+        LOGGER.info('Starting consumer')
         self._connection = self.connect()
         self._connection.ioloop.run_forever()
 
@@ -400,13 +407,15 @@ class ExampleConsumer:
         """
         if not self._closing:
             self._closing = True
-            LOGGER.info('Stopping')
+            LOGGER.info('Stopping consumer')
             if self._consuming:
                 self.stop_consuming()
-                self._connection.ioloop.run_forever()
+                # TODO: Is this wrong on the original?
+                # self._connection.ioloop.run_forever()  # noqa: ERA001
+                self._connection.ioloop.stop()
             else:
                 self._connection.ioloop.stop()
-            LOGGER.info('Stopped')
+            LOGGER.info('Stopped consumer')
 
 
 class ReconnectingExampleConsumer:
