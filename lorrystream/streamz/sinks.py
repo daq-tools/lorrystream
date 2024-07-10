@@ -50,7 +50,7 @@ class dataframe_to_sql(Sink):
         if self.engine is None:
             logger.info(f"Connecting to {self.dburi}")
             # TODO: Improve.
-            matches = re.match(r"^.*table=(\w*)", self.dburi)
+            matches = re.match(r"^.*table=([\w-]*)", self.dburi)
             if matches:
                 self.table_name = matches.group(1)
             else:

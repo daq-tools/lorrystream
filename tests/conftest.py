@@ -5,10 +5,17 @@ import pytest
 
 from lorrystream.util.common import setup_logging
 
+from .fixtures.amqp import rabbitmq  # noqa: F401
+
 
 @pytest.fixture
 def cratedb(cratedb_service):
-    cratedb_service.reset(["testdrive"])
+    cratedb_service.reset(
+        [
+            "testdrive-amqp",
+            "testdrive-mqtt",
+        ]
+    )
     yield cratedb_service
 
 
