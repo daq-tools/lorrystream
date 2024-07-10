@@ -116,7 +116,7 @@ services:
               "-Ccluster.routing.allocation.disk.threshold_enabled=false",
              ]
     environment:
-      CRATE_HEAP_SIZE: 4g
+      CRATE_HEAP_SIZE: 2g
     image: crate:${CRATEDB_VERSION}
     networks:
       - lorry-dev
