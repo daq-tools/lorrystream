@@ -114,7 +114,6 @@ develop = [
 ]
 release = [
   "build<2",
-  'minibump<1; python_version >= "3.10"',
   "twine<6",
 ]
 test = [
@@ -126,10 +125,11 @@ test = [
   "testcontainer-python-rabbitmq==0.4.*",
 ]
 [project.urls]
-changelog = "https://github.com/daq-tools/lorrystream/blob/main/CHANGES.rst"
-documentation = "https://github.com/daq-tools/lorrystream"
-homepage = "https://github.com/daq-tools/lorrystream"
-repository = "https://github.com/daq-tools/lorrystream"
+Changelog = "https://github.com/daq-tools/lorrystream/blob/main/CHANGES.rst"
+Documentation = "https://github.com/daq-tools/lorrystream"
+Homepage = "https://github.com/daq-tools/lorrystream"
+Issues = "https://github.com/daq-tools/lorrystream/issues"
+Repository = "https://github.com/daq-tools/lorrystream"
 [project.scripts]
 lorry = "lorrystream.cli:cli"
 [project.entry-points."streamz.sinks"]
@@ -266,9 +266,8 @@ lint = [
 ]
 
 release = [
-  { cmd = "minibump bump --relax minor" },
   { cmd = "python -m build" },
-  { cmd = "twine upload dist/*" },
+  { cmd = "twine upload --skip-existing dist/*" },
 ]
 
 test = { cmd = "pytest" }
