@@ -28,12 +28,6 @@ def boot_click(ctx: click.Context, verbose: bool = False, debug: bool = False):
     setup_logging(level=log_level)
 
 
-def split_list(value: str, delimiter: str = ",") -> t.List[str]:
-    if value is None:
-        return []
-    return [c.strip() for c in value.split(delimiter)]
-
-
 def to_list(x: t.Any, default: t.List[t.Any] = None) -> t.List[t.Any]:
     if not isinstance(default, t.List):
         raise ValueError("Default value is not a list")
