@@ -198,6 +198,7 @@ lint.extend-ignore = [
   "RET505",
 ]
 
+lint.per-file-ignores."amazon_kclpy_helper" = [ "T201" ]       # Allow `print`
 lint.per-file-ignores."examples/*" = [ "T201" ]                # Allow `print`
 lint.per-file-ignores."lorrystream/util/about.py" = [ "T201" ] # Allow `print`
 lint.per-file-ignores."tests/*" = [ "S101" ]                   # Use of `assert` detected
@@ -246,6 +247,10 @@ non_interactive = true
 [tool.versioningit.vcs]
 method = "git"
 default-tag = "0.0.0"
+
+# ===================
+# Tasks configuration
+# ===================
 
 [tool.poe.tasks]
 
