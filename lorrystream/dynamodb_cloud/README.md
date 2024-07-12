@@ -79,6 +79,14 @@ aws dynamodb list-tables
 aws dynamodb describe-table --table-name table-testdrive | grep TableStatus
 ```
 
+### CrateDB Table
+The destination table name in CrateDB is currently hard-coded. Please use
+this command to create the `transactions` table, where the CDC record
+processor will re-materialize CDC events into.
+```shell
+crash -c "CREATE TABLE transactions (data OBJECT(DYNAMIC));"
+```
+
 ### Kinesis Stream
 Capture DynamoDB table operations and relay them to a Kinesis stream.
 ```shell
