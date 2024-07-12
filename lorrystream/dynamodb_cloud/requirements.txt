@@ -1,0 +1,2 @@
+amazon-kclpy==2.1.5
+awscli==1.33.*
