@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+import json
 import logging
 import logging.handlers as handlers
 import time
@@ -12,6 +13,9 @@ import typing as t
 
 from amazon_kclpy import kcl
 from amazon_kclpy.v3 import processor
+from cratedb_toolkit.util import DatabaseAdapter
+
+from lorrystream.dynamodb_cloud.decoder import OpsLogDecoder
 
 # Logger writes to file because stdout is used by MultiLangDaemon
 logger = logging.getLogger(__name__)
@@ -45,6 +49,7 @@ class RecordProcessor(processor.RecordProcessorBase):
         self._largest_seq: t.Tuple[IntOrNone, IntOrNone] = (None, None)
         self._largest_sub_seq = None
         self._last_checkpoint_time = None
+        self.cratedb = DatabaseAdapter(dburi="crate://")
 
     def initialize(self, initialize_input):
         """
@@ -99,18 +104,21 @@ class RecordProcessor(processor.RecordProcessorBase):
 
     def process_record(self, data, partition_key, sequence_number, sub_sequence_number):
         """
-        Called for each record that is passed to process_records.
+        Convert record, which is a DynamoDB CDC event item, into an SQL statement,
+        and submit to downstream database.
 
         :param str data: The blob of data that was contained in the record.
         :param str partition_key: The key associated with this recod.
         :param int sequence_number: The sequence number associated with this record.
         :param int sub_sequence_number: the sub sequence number associated with this record.
         """
-        ####################################
-        # Insert your processing logic here
-        ####################################
+        cdc_event = json.loads(data)
+        logger.info("CDC event: %s", cdc_event)
 
-        logger.info(data.decode("UTF-8"))
+        sql = OpsLogDecoder.decode_opslog_item(cdc_event)
+        logger.info("SQL: %s", sql)
+
+        self.cratedb.run_sql(sql)
 
     def should_update_sequence(self, sequence_number, sub_sequence_number):
         """
