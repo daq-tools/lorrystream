@@ -91,7 +91,7 @@ crash -c "CREATE TABLE transactions (data OBJECT(DYNAMIC));"
 Capture DynamoDB table operations and relay them to a Kinesis stream.
 ```shell
 # Create a Kinesis Data Stream.
-aws kinesis create-stream --stream-name dynamodb-cdc --shard-count 4 
+aws kinesis create-stream --stream-name dynamodb-cdc --shard-count 4
 
 # Check that the Kinesis stream is active.
 aws kinesis describe-stream --stream-name dynamodb-cdc
@@ -149,7 +149,7 @@ export AWS_SECRET_ACCESS_KEY=...
 Launch the stream processor, subscribing to the DynamoDB CDC operations feed
 over a Kinesis stream.
 ```shell
-$(sh launch.sh dynamodb_cdc_processor.properties)
+sh launch.sh dynamodb_cdc_processor.properties
 ```
 
 Watch actions of the CDC processor.

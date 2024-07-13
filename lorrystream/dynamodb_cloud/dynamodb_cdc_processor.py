@@ -8,6 +8,7 @@ from __future__ import print_function
 import json
 import logging
 import logging.handlers as handlers
+import os
 import time
 import typing as t
 
@@ -15,26 +16,31 @@ from amazon_kclpy import kcl
 from amazon_kclpy.v3 import processor
 from cratedb_toolkit.util import DatabaseAdapter
 
-from lorrystream.dynamodb_cloud.decoder import OpsLogDecoder
+from lorrystream.transform.dynamodb import DynamoCDCTranslatorCrateDB
 
-# Logger writes to file because stdout is used by MultiLangDaemon
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter(
-    "%(asctime)s.%(msecs)03d [%(module)s] %(levelname)s  %(funcName)s - %(message)s", "%H:%M:%S"
-)
-handler = handlers.RotatingFileHandler("dynamodb_cdc_processor.log", maxBytes=10**6, backupCount=5)
-handler.setLevel(logging.INFO)
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
 
 IntOrNone = t.Union[int, None]
+FloatOrNone = t.Union[float, None]
+
+
+def setup_logging(logfile: str):
+    """
+    Configure Python logger to write to file, because stdout is used by MultiLangDaemon.
+    """
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "%(asctime)s.%(msecs)03d [%(module)s] %(levelname)s  %(funcName)s - %(message)s", "%H:%M:%S"
+    )
+    handler = handlers.RotatingFileHandler(logfile, maxBytes=10**6, backupCount=5)
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 
 class RecordProcessor(processor.RecordProcessorBase):
     """
-    A RecordProcessor processes data from a shard in a stream. Its methods will be called with this pattern:
+    Process data from a shard in a stream. Its methods will be called with this pattern:
 
     * initialize will be called once
     * process_records will be called zero or more times
@@ -42,14 +48,26 @@ class RecordProcessor(processor.RecordProcessorBase):
         a scaling change.
     """
 
-    def __init__(self):
+    def __init__(self, sqlalchemy_url: t.Optional[str], table_name: t.Optional[str]):
         self._SLEEP_SECONDS = 5
         self._CHECKPOINT_RETRIES = 5
         self._CHECKPOINT_FREQ_SECONDS = 60
         self._largest_seq: t.Tuple[IntOrNone, IntOrNone] = (None, None)
         self._largest_sub_seq = None
-        self._last_checkpoint_time = None
-        self.cratedb = DatabaseAdapter(dburi="crate://")
+        self._last_checkpoint_time: FloatOrNone = None
+
+        self.sqlalchemy_url = sqlalchemy_url
+        self.table_name = table_name
+
+        # Sanity checks.
+        if self.sqlalchemy_url is None:
+            raise ValueError("SQLAlchemy URL must not be empty")
+        if self.table_name is None:
+            raise ValueError("Target CDC table name must not be empty")
+
+        self.cratedb = DatabaseAdapter(dburi=self.sqlalchemy_url)
+        self.table_name = self.table_name
+        self.cdc = DynamoCDCTranslatorCrateDB(table_name=self.table_name)
 
     def initialize(self, initialize_input):
         """
@@ -112,13 +130,24 @@ class RecordProcessor(processor.RecordProcessorBase):
         :param int sequence_number: The sequence number associated with this record.
         :param int sub_sequence_number: the sub sequence number associated with this record.
         """
-        cdc_event = json.loads(data)
-        logger.info("CDC event: %s", cdc_event)
 
-        sql = OpsLogDecoder.decode_opslog_item(cdc_event)
-        logger.info("SQL: %s", sql)
+        sql = None
+        try:
+            cdc_event = json.loads(data)
+            logger.info("CDC event: %s", cdc_event)
 
-        self.cratedb.run_sql(sql)
+            sql = self.cdc.to_sql(cdc_event)
+            logger.info("SQL: %s", sql)
+        except Exception:
+            logger.exception("Decoding CDC event failed")
+
+        if not sql:
+            return
+
+        try:
+            self.cratedb.run_sql(sql)
+        except Exception:
+            logger.exception("Writing CDC event to sink database failed")
 
     def should_update_sequence(self, sequence_number, sub_sequence_number):
         """
@@ -174,6 +203,20 @@ class RecordProcessor(processor.RecordProcessorBase):
         shutdown_requested_input.checkpointer.checkpoint()
 
 
-if __name__ == "__main__":
-    kcl_process = kcl.KCLProcess(RecordProcessor())
+def main():
+    # Set up logging.
+    logfile = os.environ.get("CDC_LOGFILE", "cdc.log")
+    setup_logging(logfile)
+
+    # Setup processor.
+    sqlalchemy_url = os.environ.get("CDC_SQLALCHEMY_URL")
+    table_name = os.environ.get("CDC_TABLE_NAME")
+    kcl_processor = RecordProcessor(sqlalchemy_url=sqlalchemy_url, table_name=table_name)
+
+    # Invoke machinery.
+    kcl_process = kcl.KCLProcess(kcl_processor)
     kcl_process.run()
+
+
+if __name__ == "__main__":
+    main()
