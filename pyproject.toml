@@ -83,6 +83,7 @@ dynamic = [
 ]
 dependencies = [
   "boltons",
+  "boto3<1.35",
   "click<9",
   "colorama<1",
   "colorlog",
@@ -93,6 +94,7 @@ dependencies = [
   "paho-mqtt",
   "pandas<2.3",
   "pika<1.4",
+  "simplejson<4",
   "sqlalchemy==2.0.*",
   "sqlalchemy-cratedb==0.38.0",
   "streamz",
