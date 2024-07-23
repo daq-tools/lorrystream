@@ -82,11 +82,14 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "aws-lambda-layer<0.6",
   "boltons",
   "boto3<1.35",
   "click<9",
   "colorama<1",
   "colorlog",
+  "commons-codec==0.0.2",
+  "cottonformation<1.2",
   "dask",
   "funcy",
   "influxdb",

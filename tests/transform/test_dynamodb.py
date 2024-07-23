@@ -1,6 +1,6 @@
 import decimal
 
-from lorrystream.transform.dynamodb import DynamoCDCTranslatorCrateDB
+from commons_codec.transform.dynamodb import DynamoCDCTranslatorCrateDB
 
 READING_BASIC = {"device": "foo", "temperature": 42.42, "humidity": 84.84}
 
