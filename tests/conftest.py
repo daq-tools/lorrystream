@@ -13,6 +13,7 @@ def cratedb(cratedb_service):
     cratedb_service.reset(
         [
             "testdrive-amqp",
+            "testdrive-dynamodb-cdc",
             "testdrive-mqtt",
         ]
     )

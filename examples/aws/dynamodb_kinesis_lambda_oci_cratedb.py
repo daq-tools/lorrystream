@@ -39,8 +39,8 @@ def main():
         table_name="table-testdrive",
         stream_name="dynamodb-cdc",
         environment={
-            "CRATEDB_SQLALCHEMY_URL": "crate://admin:dZ..qB@example.eks1.eu-west-1.aws.cratedb.net:4200/?ssl=true",
-            "CRATEDB_TABLE": "transactions",
+            "SINK_SQLALCHEMY_URL": "crate://admin:dZ..qB@example.eks1.eu-west-1.aws.cratedb.net:4200/?ssl=true",
+            "SINK_TABLE": "transactions",
         },
     )
 
