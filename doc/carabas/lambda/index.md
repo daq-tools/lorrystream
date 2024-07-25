@@ -81,9 +81,9 @@ crash -c "CREATE TABLE transactions (data OBJECT(DYNAMIC));"
 
 ## Install
 In order to exercise the example outlined below, you need to install
-Lorrystream.
+LorryStream.
 ```shell
-pip install 'lorrystream @ git+https://github.com/daq-tools/lorrystream.git@kinesis'
+pip install lorrystream
 ```
 
 
