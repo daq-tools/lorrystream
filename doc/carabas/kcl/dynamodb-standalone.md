@@ -36,14 +36,29 @@ OLAP database, using the [DynamoDB Streams Kinesis Adapter]
 
 ## Holzweg!
 
-It looks like the "DynamoDB Streams Kinesis Adapter" project is dead.
+```
+# HACK
+
+# Kinesis backend.
+multi_lang_daemon_class = "software.amazon.kinesis.multilang.MultiLangDaemon"
+
+# DynamoDB backend.
+# https://github.com/awslabs/dynamodb-streams-kinesis-adapter/issues/46#issuecomment-1260222792
+multi_lang_daemon_class = "com.amazonaws.services.dynamodbv2.streamsadapter.StreamsMultiLangDaemon"
+```
+- https://github.com/awslabs/dynamodb-streams-kinesis-adapter/issues/46
+
+Q: It looks like the "DynamoDB Streams Kinesis Adapter" project is dead?
 
 - https://github.com/awslabs/dynamodb-streams-kinesis-adapter/issues/40
 - https://github.com/awslabs/dynamodb-streams-kinesis-adapter/issues/42
-- https://github.com/awslabs/dynamodb-streams-kinesis-adapter/issues/46
 
 There would be an option to try this by downgrading to KCL v1. We are not
 sure if it is worth to try it, though.
+
+A: Upgrade to KCLv2 will probably happen at some time in the future.
+
+- https://github.com/awslabs/dynamodb-streams-kinesis-adapter/issues/22
 
 
 [change data capture (CDC)]: https://en.wikipedia.org/wiki/Change_data_capture
