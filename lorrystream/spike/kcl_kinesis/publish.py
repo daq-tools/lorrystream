@@ -11,7 +11,7 @@ reading = {"device": "foo", "temperature": 42.42, "humidity": 84.84}
 async def main():
 
     # Put item onto queue to be flushed via `put_records()`.
-    async with Producer(stream_name="testdrive-stream", region_name="us-east-1", buffer_time=0.01) as producer:
+    async with Producer(stream_name="dynamodb-cdc", region_name="eu-central-1", buffer_time=0.01) as producer:
         await producer.put(reading)
 
 

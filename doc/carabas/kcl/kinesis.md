@@ -13,7 +13,7 @@ Create a Kinesis stream, and set up a Python sandbox for connecting
 to it using KCL v2.
 
 This section reflects configuration settings stored in
-[record_processor.properties](../../../lorrystream/kinesis/record_processor.properties).
+[record_processor.properties](../../../lorrystream/spike/kcl_kinesis/record_processor.properties).
 
 ### AWS
 Configure a Kinesis Stream, and an IAM policy, because Kinesis needs to create
