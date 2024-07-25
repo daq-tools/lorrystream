@@ -41,7 +41,7 @@ Create a database table in DynamoDB, and enable a Kinesis Stream on its
 operations log.
 
 This section reflects configuration settings stored in
-[dynamodb_cdc_processor.properties](../../../lorrystream/dynamodb_cloud/dynamodb_cdc_processor.properties).
+[dynamodb_cdc_processor.properties](../../../lorrystream/spike/kcl_dynamodb/dynamodb_cdc_processor.properties).
 
 We recommend to run through the setup procedure of [](kinesis.md)
 beforehand, because it conveys relevant setup instructions about IAM
