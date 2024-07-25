@@ -135,6 +135,7 @@ class DynamoDBKinesisPipe(GenericEnvStack):
             id="EventSourceToLambdaMapping",
             rp_FunctionName=awsfunc.p_FunctionName,
             p_EventSourceArn=self._event_source.rv_Arn,
+            p_BatchSize=2500,
             # LATEST - Read only new records.
             # TRIM_HORIZON - Process all available records.
             # AT_TIMESTAMP - Specify a time from which to start reading records.
