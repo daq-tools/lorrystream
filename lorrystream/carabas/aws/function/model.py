@@ -131,7 +131,7 @@ class LambdaFactory:
             p_PackageType="Image",
             p_Environment=awslambda.PropFunctionEnvironment(p_Variables=environment),
             rp_Role=iam_role_for_lambda.rv_Arn,
-            p_MemorySize=128,
+            p_MemorySize=512,
             p_Timeout=3,
             ra_DependsOn=iam_role_for_lambda,
         )
