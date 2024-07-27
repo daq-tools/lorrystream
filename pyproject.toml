@@ -153,13 +153,17 @@ namespaces = false
 
 [tool.black]
 line-length = 120
-extend-exclude = "lorrystream/streamz/amqp.py"
+force-exclude = '''
+  lorrystream/streamz/amqp.py
+| lorrystream/carabas/aws/cf/.*\.py
+'''
 
 [tool.ruff]
 line-length = 120
 
 extend-exclude = [
   "amqp-to-mqtt.py",
+  "dms_next\\.py$",
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
   "workbench.py",
@@ -241,7 +245,8 @@ show_missing = true
 
 [tool.mypy]
 packages = [ "lorrystream" ]
-exclude = [
+extend-exclude = [
+  "lorrystream/carabas/aws/cf/*.py",
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
 ]
@@ -250,6 +255,10 @@ ignore_missing_imports = true
 implicit_optional = true
 install_types = true
 non_interactive = true
+
+[[tool.mypy.overrides]]
+module = "lorrystream.carabas.aws.cf.*"
+follow_imports = "silent"
 
 [tool.versioningit.vcs]
 method = "git"
