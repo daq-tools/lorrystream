@@ -1,2 +1,1 @@
 amazon-kclpy==2.1.5
-async-kinesis==1.1.5

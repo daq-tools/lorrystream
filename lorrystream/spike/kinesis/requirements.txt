@@ -1,0 +1,1 @@
+async-kinesis==1.1.5
