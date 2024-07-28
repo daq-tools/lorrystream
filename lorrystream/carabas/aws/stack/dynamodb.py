@@ -2,19 +2,18 @@ import logging
 import typing as t
 
 import attr
-import botocore
 from cottonformation import ResourceGroup
 from cottonformation.res import awslambda, dynamodb, kinesis
 from cottonformation.res.dynamodb import PropTableKinesisStreamSpecification
 
-from lorrystream.carabas.aws.function.model import LambdaFactory, LambdaResource
-from lorrystream.carabas.aws.model import GenericEnvStack
+from lorrystream.carabas.aws.function.model import LambdaFactory
+from lorrystream.carabas.aws.model import KinesisProcessorStack
 
 logger = logging.getLogger(__name__)
 
 
 @attr.s
-class DynamoDBKinesisPipe(GenericEnvStack):
+class DynamoDBKinesisPipe(KinesisProcessorStack):
     """
     A description for an AWS CloudFormation stack, relaying DynamoDB CDC information into a sink.
     It is written down in Python, uses OO, and a fluent API.
@@ -33,9 +32,6 @@ class DynamoDBKinesisPipe(GenericEnvStack):
     stream_name: str = attr.ib()
 
     environment: t.Dict[str, str] = attr.ib(factory=dict)
-
-    _event_source: t.Optional[t.Union[kinesis.Stream]] = None
-    _processor: t.Optional[LambdaResource] = None
 
     def table(self):
         """
@@ -143,52 +139,3 @@ class DynamoDBKinesisPipe(GenericEnvStack):
             ra_DependsOn=awsfunc,
         )
         return self.add(mapping)
-
-    def deploy_processor_image(self):
-        """
-        Make an already running Lambda pick up a newly published OCI image.
-
-        This is an imperative function executed orthogonally to the CloudFormation deployment.
-
-        It follows this procedure:
-        - Acquire the `<FunctionName>Arn` Output of the Stack's core processor Lambda.
-        - Use it to look up a handle to the actual Lambda information.
-        - From the information unit, extract the OCI image URI.
-        - Instruct the machinery to update the Lambda function code,
-          effectively respawning the container running it.
-        """
-        if not self._processor:
-            logger.warning("No processor defined, skip deploying processor OCI image")
-            return None
-        function_id = self._processor.function.id
-
-        # Inquire Stack Output.
-        logger.info(f"Discovering Lambda function existence: {function_id}")
-        output_id = f"{function_id}Arn"
-        try:
-            function_arn = self.get_output_value(self._bsm, output_id)
-        except botocore.exceptions.ClientError as ex:
-            if "does not exist" not in str(ex):
-                raise
-            logger.info(f"Stack not found or incomplete: {self.stack_name}")
-            return None
-        except KeyError:
-            logger.info(f"Stack not found or incomplete. Output not found: {output_id}")
-            return None
-
-        # Inquire AWS API and eventually update Lambda code.
-        client = self._bsm.get_client("lambda")
-        try:
-            if func := client.get_function(FunctionName=function_arn):
-                logger.info(f"Found Lambda function: {function_arn}")
-                oci_uri = func["Code"]["ImageUri"]
-                logger.info(f"Deploying new OCI image to Lambda function: {oci_uri}")
-                response = client.update_function_code(FunctionName=function_arn, ImageUri=oci_uri)
-                last_status_message = response["LastUpdateStatusReason"]
-                logger.info(f"Lambda update status response: {last_status_message}")
-        except Exception as ex:
-            if ex.__class__.__name__ != "ResourceNotFoundException":
-                raise
-            logger.info(f"Lambda function to update OCI image not found: {function_arn}")
-
-        return self
