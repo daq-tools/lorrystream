@@ -220,8 +220,12 @@ lint.per-file-ignores."test_*.py" = [ "S101" ]                 # Use of `assert`
 lint.per-file-ignores."tests/*" = [ "S101" ]                   # Use of `assert` detected
 
 [tool.pytest.ini_options]
+# Because synchronous and asynchronous tests are mixed,
+# and maybe because of woes with pytest fixtures, the
+# test suite must turn off concurrency.
 addopts = """
   -rA --verbosity=3
+  --max-asyncio-tasks=1 --asyncio-task-timeout=30
   --cov --cov-report=term-missing --cov-report=xml
 """
 minversion = "2.0"
