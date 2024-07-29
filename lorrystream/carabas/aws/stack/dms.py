@@ -1,3 +1,4 @@
+import json
 import typing as t
 
 import attr
@@ -6,7 +7,7 @@ from cottonformation import ResourceGroup
 from cottonformation.res import awslambda, ec2, iam, kinesis, rds
 
 from lorrystream.carabas.aws import LambdaFactory
-from lorrystream.carabas.aws.cf import dms2024 as dms
+from lorrystream.carabas.aws.cf import dms_next as dms
 from lorrystream.carabas.aws.model import KinesisProcessorStack
 
 
@@ -199,6 +200,28 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         )
         group.add(self._db_security_group)
 
+        # aws rds describe-db-parameter-groups
+        # aws rds describe-db-parameters --db-parameter-group-name default.postgres15
+        db_parameter_group = rds.DBParameterGroup(
+            "RDSPostgreSQLParameterGroup",
+            rp_Family="postgres15",
+            rp_Description="DMS parameter group for postgres15",
+            p_DBParameterGroupName="dms-postgres15",
+            # aws rds describe-db-parameters --db-parameter-group-name default.postgres15
+            p_Parameters={
+                "log_connections": True,
+                # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.pgaudit.html
+                "pgaudit.log": "all",
+                "pgaudit.log_statement_once": True,
+                # `rds.logical_replication is a cluster level setting, not db instance setting?
+                # https://stackoverflow.com/a/66252465
+                "rds.logical_replication": True,
+                # TODO: wal2json?
+                "shared_preload_libraries": "pgaudit,pglogical,pg_stat_statements",
+            },
+        )
+        group.add(db_parameter_group)
+
         db = rds.DBInstance(
             "RDSPostgreSQL",
             p_DBInstanceClass="db.t3.micro",
@@ -208,6 +231,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             # The current default engine version for AWS DMS is 3.5.2.
             # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_ReleaseNotes.html
             p_EngineVersion="15",
+            p_DBParameterGroupName="dms-postgres15",
             # The parameter AllocatedStorage must be provided and must not be null.
             # Invalid storage size for engine name postgres and storage type gp2: 1
             p_AllocatedStorage="5",
@@ -228,17 +252,21 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             # If there's no DB subnet group, then the DB instance isn't a VPC DB instance.
             p_DBSubnetGroupName=self._db_subnet_group.ref(),
             p_EnableCloudwatchLogsExports=["postgresql", "upgrade"],
-            ra_UpdateReplacePolicy="Retain",
-            ra_DeletionPolicy="Retain",
             # p_DBName="testdrive",  # noqa: ERA001
             p_Tags=cf.Tag.make_many(
                 Name=cf.Sub.from_params(f"{self.env_name}-db"),
                 Description=cf.Sub.from_params(f"The DB instance for {self.env_name}"),
             ),
-            ra_DependsOn=[self._db_security_group, self._db_subnet_group],
+            ra_DependsOn=[db_parameter_group, self._db_security_group, self._db_subnet_group],
         )
         self._db = db
         group.add(db)
+
+        rds_arn = cf.Output(
+            "RDSInstanceArn",
+            Value=db.rv_DBInstanceArn,
+        )
+        group.add(rds_arn)
 
         public_endpoint = cf.Output(
             "PublicDbEndpoint",
@@ -406,6 +434,9 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         )
         group.add(vpc_endpoint_stream)
 
+        # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html#CHAP_Source.PostgreSQL.Advanced
+        # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html#CHAP_Source.PostgreSQL.RDSPostgreSQL
+        # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html#CHAP_Source.PostgreSQL.ConnectionAttrib
         source_endpoint = dms.Endpoint(  # type: ignore[call-arg,misc]
             "DMSSourceEndpoint",
             rp_EndpointType="source",
@@ -417,6 +448,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             p_Username=self.db_username,
             p_Password=self.db_password,
             p_DatabaseName="postgres",
+            p_ExtraConnectionAttributes=json.dumps(
+                {
+                    "CaptureDdls": True,
+                    "PluginName": "pglogical",
+                }
+            ),
             p_EndpointIdentifier=f"{self.env_name}-endpoint-source",
             ra_DependsOn=[self._db],
         )
@@ -427,6 +464,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             p_KinesisSettings=dms.PropEndpointKinesisSettings(
                 p_StreamArn=self._stream.rv_Arn,
                 p_MessageFormat="json-unformatted",
+                p_IncludeControlDetails=True,
+                p_IncludePartitionValue=True,
+                p_IncludeTransactionDetails=True,
+                p_IncludeNullAndEmpty=True,
+                p_IncludeTableAlterOperations=True,
+                p_PartitionIncludeSchemaTable=True,
                 # The parameter ServiceAccessRoleArn must be provided and must not be blank.
                 p_ServiceAccessRoleArn=dms_target_access_role.rv_Arn,
             ),
@@ -437,6 +480,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         group.add(target_endpoint)
 
         # FIXME: Currently hard-coded to table `public.foo`.
+        # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html
         map_to_kinesis = {
             "rules": [
                 {
@@ -466,7 +510,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             "DMSReplicationConfig",
             rp_ReplicationConfigIdentifier=f"{self.env_name}-dms-serverless",
             # p_ResourceIdentifier=f"{self.env_name}-dms-serverless-resource",  # noqa: ERA001
-            rp_ReplicationType="full-load",
+            rp_ReplicationType="full-load-and-cdc",
             rp_SourceEndpointArn=source_endpoint.ref(),
             rp_TargetEndpointArn=target_endpoint.ref(),
             rp_ComputeConfig=dms.PropReplicationConfigComputeConfig(
@@ -478,6 +522,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             ),
             rp_TableMappings=map_to_kinesis,
             p_ReplicationSettings={
+                # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.BeforeImage.html
+                "BeforeImageSettings": {
+                    "EnableBeforeImage": True,
+                    "FieldName": "before-image",
+                    "ColumnFilter": "pk-only",
+                },
                 # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.Logging.html
                 "Logging": {
                     "EnableLogging": True,
@@ -507,7 +557,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                         # {"Id": "VALIDATOR", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},  # noqa: ERA001
                         {"Id": "VALIDATOR_EXT", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
                     ],
-                }
+                },
             },
             ra_DependsOn=[
                 dms_replication_subnet_group,
@@ -520,6 +570,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             ],
         )
         group.add(serverless_replication)
+
+        replication_arn = cf.Output(
+            "ReplicationArn",
+            Value=serverless_replication.rv_ReplicationConfigArn,
+        )
+        group.add(replication_arn)
 
         return self.add(group)
 
