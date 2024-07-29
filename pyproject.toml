@@ -121,7 +121,7 @@ test = [
   "pytest<9",
   "pytest-asyncio-cooperative",
   "pytest-cov<6",
-  "pytest-mqtt<0.5",
+  "pytest-mqtt>=0.4.2,<0.5",
   "testcontainer-python-rabbitmq==0.4.*",
 ]
 [project.urls]
