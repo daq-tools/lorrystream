@@ -19,6 +19,9 @@ def main():
     - CrateDB Cloud
 
     Prerequisites: Register an OCI repository.
+
+    Resources:
+    - https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html
     """
 
     # Build and publish OCI image that includes the AWS Lambda function.
@@ -70,34 +73,13 @@ def main():
     psql_command = (
         f'psql "postgresql://{stack.db_username}:{stack.db_password}@{PublicDbEndpoint}:{PublicDbPort}/postgres"'
     )
+
+    print("Result of CloudFormation deployment:")
     print(psql_command)
 
+    print("RDS Instance ARN:", stack.get_output_value(stack._bsm, "RDSInstanceArn"))
     print("Stream ARN:", stack.get_output_value(stack._bsm, "StreamArn"))
-
-    """
-    aws dms describe-replications
-    aws dms start-replication \
-        --start-replication-type=start-replication \
-        --replication-config-arn arn:aws:dms:eu-central-1:931394475905:replication-config:LB2JAGY7XFB7PA7HEX3MI36CUA
-
-    aws logs describe-log-groups
-    aws logs start-live-tail --log-group-identifiers \
-        arn:aws:logs:eu-central-1:931394475905:log-group:/aws/rds/instance/testdrive-dms-postgresql-dev-db/postgresql \
-        arn:aws:logs:eu-central-1:931394475905:log-group:dms-serverless-replication-LB2JAGY7XFB7PA7HEX3MI36CUA
-
-    aws cloudformation continue-update-rollback --stack-name testdrive-dms-postgresql-dev
-    aws cloudformation delete-stack --stack-name testdrive-dms-postgresql-dev
-    """
-    """
-    - https://docs.aws.amazon.com/dms/latest/APIReference/API_StartReplication.html#DMS-StartReplication-request-StartReplicationType
-    - https://docs.aws.amazon.com/cli/latest/reference/dms/start-replication-task.html
-
-    Possible values:
-
-    - start-replication
-    - resume-processing
-    - reload-target
-    """
+    print("Replication ARN:", stack.get_output_value(stack._bsm, "ReplicationArn"))
 
 
 if __name__ == "__main__":

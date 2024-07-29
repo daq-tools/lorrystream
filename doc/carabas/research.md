@@ -34,3 +34,11 @@
 
 ## DMS
 - https://stackoverflow.com/questions/77995867/dynamic-tables-via-dms-kinesis-iceberg-transactional-data-lake
+- https://aws.amazon.com/blogs/database/tune-replication-performance-with-aws-dms-for-an-amazon-kinesis-data-streams-target-endpoint-part-3/
+- https://www.cockroachlabs.com/docs/stable/aws-dms
+
+## wal2json
+- https://hevodata.com/learn/pg-logical/
+- https://aws.amazon.com/blogs/database/stream-changes-from-amazon-rds-for-postgresql-using-amazon-kinesis-data-streams-and-aws-lambda/
+- https://github.com/eulerto/wal2json
+- https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-extensions.html#postgresql-extensions-15x
