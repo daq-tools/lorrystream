@@ -633,12 +633,26 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         self._processor = factory.make(self, environment=environment)
         return self.add(self._processor.group)
 
-    def connect(self):
+    def connect(
+        self,
+        batch_size: int = 1_000,
+        starting_position: t.Literal["LATEST", "TRIM_HORIZON", "AT_TIMESTAMP"] = "TRIM_HORIZON",
+        starting_position_timestamp: float = None,
+    ):
         """
-        Connect the event source to the processor.
+        Connect the event source to the processor Lambda.
+
+        starting_position:
+        - LATEST - Read only new records.
+        - TRIM_HORIZON - Process all available records.
+        - AT_TIMESTAMP - Specify a time from which to start reading records.
+
+        starting_position_timestamp:
+          With `starting_position` set to `AT_TIMESTAMP`, the time from which to start reading,
+          in Unix time seconds. `starting_position_timestamp` cannot be in the future.
 
         https://docs.aws.amazon.com/lambda/latest/dg/services-kinesis-create.html
-        https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html#cfn-lambda-eventsourcemapping-startingposition
+        https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html
 
         aws kinesis register-stream-consumer \
         --consumer-name con1 \
@@ -663,11 +677,9 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             id="KinesisToLambdaMapping",
             rp_FunctionName=awsfunc.p_FunctionName,
             p_EventSourceArn=self._stream_source.rv_Arn,
-            p_BatchSize=2500,
-            # LATEST - Read only new records.
-            # TRIM_HORIZON - Process all available records.
-            # AT_TIMESTAMP - Specify a time from which to start reading records.
-            p_StartingPosition="TRIM_HORIZON",
+            p_BatchSize=batch_size,
+            p_StartingPosition=starting_position,
+            p_StartingPositionTimestamp=starting_position_timestamp,
             ra_DependsOn=awsfunc,
         )
         return self.add(mapping)

@@ -12,6 +12,7 @@ from .fixtures.amqp import rabbitmq, rabbitmq_service  # noqa: F401
 def cratedb(cratedb_service):
     cratedb_service.reset(
         [
+            "public.foo",
             "testdrive-amqp",
             "testdrive-dynamodb-cdc",
             "testdrive-mqtt",
