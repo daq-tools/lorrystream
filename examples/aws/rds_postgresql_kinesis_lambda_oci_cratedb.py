@@ -109,7 +109,14 @@ def main():
             "COLUMN_TYPES": column_types.to_json(),
             "SINK_SQLALCHEMY_URL": os.environ.get("SINK_SQLALCHEMY_URL", "crate://"),
         },
-    ).connect()
+    ).connect(
+        batch_size=2_500,
+        # - LATEST - Read only new records.
+        # - TRIM_HORIZON - Process all available records.
+        # - AT_TIMESTAMP - Specify a time from which to start reading records.
+        starting_position="TRIM_HORIZON",
+        # starting_position_timestamp=1722986869.0,  # noqa: ERA001
+    )
 
     # Deploy stack.
     stack.deploy()

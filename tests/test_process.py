@@ -3,6 +3,7 @@ import os
 import sys
 
 import pytest
+from commons_codec.model import ColumnType, ColumnTypeMapStore, TableAddress
 
 
 @pytest.fixture
@@ -83,4 +84,43 @@ def test_kinesis_dynamodb_cratedb_lambda_batch(mocker, cratedb, reset_handler):
     records = cratedb.database.run_sql('SELECT * FROM "testdrive-dynamodb-cdc";', records=True)
     assert records[0] == {
         "data": {"temperature": 42.42, "humidity": 84.84, "device": "foo", "timestamp": "2024-07-12T01:17:42"}
+    }
+
+
+def test_kinesis_dms_cratedb_lambda_basic(mocker, cratedb, reset_handler):
+    """
+    Test AWS Lambda processing AWS DMS events, converging to CrateDB.
+    """
+
+    # Read event payload.
+    with open("tests/testdata/kinesis_dms.json") as fp:
+        event = json.load(fp)
+
+    # Define column type mapping for CrateDB processor.
+    column_types = ColumnTypeMapStore().add(
+        table=TableAddress(schema="public", table="foo"),
+        column="attributes",
+        type_=ColumnType.MAP,
+    )
+
+    # Configure environment variables.
+    handler_environment = {
+        "MESSAGE_FORMAT": "dms",
+        "COLUMN_TYPES": column_types.to_json(),
+        "SINK_SQLALCHEMY_URL": cratedb.get_connection_url(),
+    }
+    mocker.patch.dict(os.environ, handler_environment)
+
+    # Invoke Lambda handler.
+    from lorrystream.process.kinesis_cratedb_lambda import handler
+
+    handler(event, None)
+
+    # Verify record exists in CrateDB.
+    cratedb.database.run_sql('REFRESH TABLE "public"."foo";')
+    assert cratedb.database.count_records("public.foo") == 1
+
+    records = cratedb.database.run_sql('SELECT * FROM "public"."foo";', records=True)
+    assert records[0] == {
+        "data": {"id": 46, "name": "Jane", "age": 31, "attributes": {"baz": "qux"}},
     }
