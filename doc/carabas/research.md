@@ -42,3 +42,7 @@
 - https://aws.amazon.com/blogs/database/stream-changes-from-amazon-rds-for-postgresql-using-amazon-kinesis-data-streams-and-aws-lambda/
 - https://github.com/eulerto/wal2json
 - https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-extensions.html#postgresql-extensions-15x
+
+## CDC
+- https://debezium.io/documentation/reference/stable/postgres-plugins.html
+- https://github.com/debezium/postgres-decoderbufs

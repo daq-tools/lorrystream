@@ -80,7 +80,7 @@ class GenericEnvStack(cf.Stack):
         logger.info("Deploying CloudFormation stack")
         parameters = self.parameters or []
 
-        self.template.batch_tagging(dict(ProjectName=self.project, Stage=self.stage))  # noqa: C408
+        self.template.batch_tagging(dict(ProjectName=self.project, Stage=self.stage), mode_overwrite=True)  # noqa: C408
 
         env = cf.Env(bsm=self._bsm)
         if respawn:
@@ -93,9 +93,11 @@ class GenericEnvStack(cf.Stack):
             include_iam=True,
             include_named_iam=True,
             verbose=True,
-            skip_prompt=True,
+            skip_prompt=False,
             # 300 seconds are not enough to wait for RDS PostgreSQL, for example.
-            timeout=500,
+            # 500 seconds are not enough for a complete stack including a DMS instance, for example.
+            # on 110 th attempt, elapsed 555 seconds, remain 445 seconds ...
+            timeout=750,
         )
         return self
 
@@ -158,4 +160,4 @@ class GenericProcessorStack(GenericEnvStack):
 @attr.s
 class KinesisProcessorStack(GenericProcessorStack):
 
-    _event_source: t.Optional[t.Union[kinesis.Stream]] = None
+    _stream_source: t.Union[kinesis.Stream, None] = None

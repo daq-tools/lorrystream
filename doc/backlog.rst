@@ -40,6 +40,8 @@ Iteration 2
 - [o] Examples: Add ``appsink`` example
 - [o] Improve inline docs
 - [o] Release 0.1.0
+- [o] CSV: https://github.com/alan-turing-institute/CleverCSV
+- [o] Excel & ODF: https://github.com/dimastbk/python-calamine
 
 
 ***********

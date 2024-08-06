@@ -3,7 +3,7 @@ import typing as t
 
 import attr
 import cottonformation as cf
-from cottonformation import ResourceGroup
+from cottonformation import GetAtt
 from cottonformation.res import awslambda, ec2, iam, kinesis, rds
 
 from lorrystream.carabas.aws import LambdaFactory
@@ -38,8 +38,6 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
     db_username: str = attr.ib()
     db_password: str = attr.ib()
 
-    environment: t.Dict[str, str] = attr.ib(factory=dict)
-
     _vpc: ec2.VPC = None
     _public_subnet1: ec2.Subnet = None
     _public_subnet2: ec2.Subnet = None
@@ -47,10 +45,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
     _db_security_group: ec2.SecurityGroup = None
 
     _db: rds.DBInstance = None
-    _stream: kinesis.Stream = None
+
+    _dms_instance: dms.ReplicationInstance = None
+    _dms_kinesis_access_role: iam.Role = None
 
     def vpc(self):
-        group = ResourceGroup()
+        group = cf.ResourceGroup()
 
         self._vpc = ec2.VPC(
             "VPCInstance",
@@ -95,8 +95,8 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         group.add(self._public_subnet1)
         group.add(self._public_subnet2)
 
-        # Cannot create a publicly accessible DBInstance.
-        # The specified VPC has no internet gateway attached.
+        # FIXME: Problem: Cannot create a publicly accessible DBInstance.
+        #        The specified VPC has no internet gateway attached.
         gateway = ec2.InternetGateway(
             "VPCGateway",
             p_Tags=cf.Tag.make_many(
@@ -151,7 +151,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         return self.add(group)
 
     def database(self):
-        group = ResourceGroup()
+        group = cf.ResourceGroup()
 
         # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html
         self._db_subnet_group = rds.DBSubnetGroup(
@@ -164,10 +164,11 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         )
         group.add(self._db_subnet_group)
 
+        db_security_group_name = f"{self.env_name}-db-security-group"
         self._db_security_group = ec2.SecurityGroup(
             "RDSPostgreSQLSecurityGroup",
             rp_GroupDescription=f"DB security group for {self.env_name}",
-            p_GroupName=f"{self.env_name}-db-security-group",
+            p_GroupName=db_security_group_name,
             p_VpcId=self._vpc.ref(),
             p_SecurityGroupIngress=[
                 ec2.PropSecurityGroupIngress(
@@ -195,7 +196,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                     p_CidrIp="0.0.0.0/0",
                 )
             ],
-            p_Tags=cf.Tag.make_many(Name=cf.Sub.from_params(f"{self.env_name}-db-security-group")),
+            p_Tags=cf.Tag.make_many(Name=cf.Sub.from_params(db_security_group_name)),
             ra_DependsOn=[self._vpc],
         )
         group.add(self._db_security_group)
@@ -210,13 +211,14 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             # aws rds describe-db-parameters --db-parameter-group-name default.postgres15
             p_Parameters={
                 "log_connections": True,
+                # List of allowable settings for the pgaudit.log parameter:
+                # none, all, ddl, function, misc, read, role, write
                 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.pgaudit.html
-                "pgaudit.log": "all",
+                "pgaudit.log": "none",
                 "pgaudit.log_statement_once": True,
                 # `rds.logical_replication is a cluster level setting, not db instance setting?
                 # https://stackoverflow.com/a/66252465
                 "rds.logical_replication": True,
-                # TODO: wal2json?
                 "shared_preload_libraries": "pgaudit,pglogical,pg_stat_statements",
             },
         )
@@ -251,7 +253,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             ],
             # If there's no DB subnet group, then the DB instance isn't a VPC DB instance.
             p_DBSubnetGroupName=self._db_subnet_group.ref(),
-            p_EnableCloudwatchLogsExports=["postgresql", "upgrade"],
+            p_EnableCloudwatchLogsExports=["postgresql"],
             # p_DBName="testdrive",  # noqa: ERA001
             p_Tags=cf.Tag.make_many(
                 Name=cf.Sub.from_params(f"{self.env_name}-db"),
@@ -269,32 +271,32 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         group.add(rds_arn)
 
         public_endpoint = cf.Output(
-            "PublicDbEndpoint",
+            "DatabaseHost",
             Value=db.rv_EndpointAddress,
         )
         group.add(public_endpoint)
 
         public_db_port = cf.Output(
-            "PublicDbPort",
+            "DatabasePort",
             Value=db.rv_EndpointPort,
         )
         group.add(public_db_port)
         return self.add(group)
 
     def stream(self):
-        group = ResourceGroup()
+        group = cf.ResourceGroup()
         # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html#CHAP_Target.Kinesis.Prerequisites
 
-        self._stream = kinesis.Stream(
+        self._stream_source = kinesis.Stream(
             id="KinesisStream",
             p_Name=f"{self.env_name}-stream",
             p_StreamModeDetails={"rp_StreamMode": "ON_DEMAND"},
         )
         stream_arn = cf.Output(
             "StreamArn",
-            Value=self._stream.rv_Arn,
+            Value=self._stream_source.rv_Arn,
         )
-        group.add(self._stream)
+        group.add(self._stream_source)
         group.add(stream_arn)
         return self.add(group)
 
@@ -322,7 +324,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         -- https://github.com/hashicorp/terraform-provider-aws/issues/19580
         -- https://docs.aws.amazon.com/dms/latest/userguide/security-iam.html#CHAP_Security.APIRole
         """
-        group = ResourceGroup()
+        group = cf.ResourceGroup()
 
         # Trust policy that is associated with upcoming roles.
         # Trust policies define which entities can assume the role.
@@ -345,6 +347,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                 cf.helpers.iam.AwsManagedPolicy.AmazonDMSVPCManagementRole,
             ],
         )
+        group.add(dms_vpc_role)
         dms_cloudwatch_role = iam.Role(
             id="DMSCloudWatchLogsRole",
             rp_AssumeRolePolicyDocument=trust_policy_dms,
@@ -357,12 +360,11 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                 cf.helpers.iam.AwsManagedPolicy.AmazonDMSCloudWatchLogsRole,
             ],
         )
-        group.add(dms_vpc_role)
         group.add(dms_cloudwatch_role)
 
         # Allow DMS accessing the data sink. In this case, Kinesis.
         # For Redshift, this role needs to be called `dms-access-for-endpoint`.
-        dms_target_access_role = iam.Role(
+        self._dms_kinesis_access_role = iam.Role(
             id="DMSTargetAccessRole",
             rp_AssumeRolePolicyDocument=trust_policy_dms,
             p_RoleName=cf.Sub("${EnvName}-dms-target-access-role", {"EnvName": self.param_env_name.ref()}),
@@ -370,13 +372,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             p_ManagedPolicyArns=[
                 cf.helpers.iam.AwsManagedPolicy.AmazonKinesisFullAccess,
             ],
-            ra_DependsOn=self._stream,
+            ra_DependsOn=self._stream_source,
         )
-        group.add(dms_target_access_role)
+        group.add(self._dms_kinesis_access_role)
 
         # Create a replication subnet group given a list of the subnet IDs in a VPC.
         # https://docs.aws.amazon.com/dms/latest/APIReference/API_CreateReplicationSubnetGroup.html
-        # """
         dms_replication_subnet_group = dms.ReplicationSubnetGroup(  # type: ignore[call-arg,misc]
             "DMSReplicationSubnetGroup",
             rp_SubnetIds=[self._public_subnet1.ref(), self._public_subnet2.ref()],
@@ -385,12 +386,12 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             ra_DependsOn=[dms_vpc_role],
         )
         group.add(dms_replication_subnet_group)
-        # """
 
+        dms_security_group_name = f"{self.env_name}-dms-security-group"
         dms_security_group = ec2.SecurityGroup(
             "DMSSecurityGroup",
             rp_GroupDescription=f"DMS security group for {self.env_name}",
-            p_GroupName=f"{self.env_name}-dms-security-group",
+            p_GroupName=dms_security_group_name,
             p_VpcId=self._vpc.ref(),
             p_SecurityGroupIngress=[
                 ec2.PropSecurityGroupIngress(
@@ -418,9 +419,33 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                     p_CidrIp="0.0.0.0/0",
                 )
             ],
+            p_Tags=cf.Tag.make_many(Name=cf.Sub.from_params(dms_security_group_name)),
             ra_DependsOn=[self._vpc, dms_replication_subnet_group],
         )
         group.add(dms_security_group)
+
+        # The replication instance is the main workhorse.
+        self._dms_instance = dms.ReplicationInstance(
+            "DMSReplicationInstance",
+            rp_ReplicationInstanceClass="dms.t3.medium",
+            p_ReplicationInstanceIdentifier=f"{self.env_name}-dms-instance",
+            p_MultiAZ=False,
+            p_ReplicationSubnetGroupIdentifier=dms_replication_subnet_group.ref(),
+            p_VpcSecurityGroupIds=[dms_security_group.ref()],
+            p_EngineVersion="3.5.2",
+            p_AllocatedStorage=5,
+            p_PubliclyAccessible=True,
+            p_AutoMinorVersionUpgrade=False,
+            p_AllowMajorVersionUpgrade=False,
+            ra_DependsOn=[
+                dms_vpc_role,
+                dms_cloudwatch_role,
+                dms_security_group,
+                dms_replication_subnet_group,
+                self._dms_kinesis_access_role,
+            ],
+        )
+        group.add(self._dms_instance)
 
         # Configuring VPC endpoints as AWS DMS source and target endpoints.
         # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_VPC_Endpoints.html
@@ -429,10 +454,19 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             rp_VpcId=self._vpc.ref(),
             rp_ServiceName=f"com.amazonaws.{self.region}.kinesis-streams",
             p_SubnetIds=[self._public_subnet1.ref(), self._public_subnet2.ref()],
-            p_SecurityGroupIds=[self._db_security_group.ref(), dms_security_group.ref()],
+            # TODO: Does it really need _both_ security groups?
+            p_SecurityGroupIds=[
+                self._db_security_group.ref(),
+                dms_security_group.ref(),
+            ],
             p_VpcEndpointType="Interface",
         )
         group.add(vpc_endpoint_stream)
+        return self.add(group)
+
+    def replication(self, dms_table_mapping: t.Dict[str, t.Any]):
+
+        group = cf.ResourceGroup()
 
         # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html#CHAP_Source.PostgreSQL.Advanced
         # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html#CHAP_Source.PostgreSQL.RDSPostgreSQL
@@ -442,7 +476,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             rp_EndpointType="source",
             rp_EngineName="postgres",
             p_ServerName=self._db.rv_EndpointAddress,
-            # NOTE: Needs to be integer!
+            # NOTE: Needs to be integer, so it requires a patched version of cottonformation's `dms` resource wrappers.
             p_Port=self._db.rv_EndpointPort,
             p_SslMode="require",
             p_Username=self.db_username,
@@ -462,7 +496,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             rp_EndpointType="target",
             rp_EngineName="kinesis",
             p_KinesisSettings=dms.PropEndpointKinesisSettings(
-                p_StreamArn=self._stream.rv_Arn,
+                p_StreamArn=self.stream_arn,
                 p_MessageFormat="json-unformatted",
                 p_IncludeControlDetails=True,
                 p_IncludePartitionValue=True,
@@ -471,42 +505,55 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                 p_IncludeTableAlterOperations=True,
                 p_PartitionIncludeSchemaTable=True,
                 # The parameter ServiceAccessRoleArn must be provided and must not be blank.
-                p_ServiceAccessRoleArn=dms_target_access_role.rv_Arn,
+                p_ServiceAccessRoleArn=self._dms_kinesis_access_role.rv_Arn,
             ),
             p_EndpointIdentifier=f"{self.env_name}-endpoint-target",
-            ra_DependsOn=[self._stream, dms_target_access_role, vpc_endpoint_stream],
+            ra_DependsOn=[self._stream_source, self._dms_kinesis_access_role],
         )
         group.add(source_endpoint)
         group.add(target_endpoint)
 
-        # FIXME: Currently hard-coded to table `public.foo`.
-        # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html
-        map_to_kinesis = {
-            "rules": [
-                {
-                    "rule-type": "selection",
-                    "rule-id": "1",
-                    "rule-name": "DefaultInclude",
-                    "rule-action": "include",
-                    "object-locator": {"schema-name": "public", "table-name": "foo"},
-                    "filters": [],
-                },
-                # Using the percent wildcard ("%") in "table-settings" rules is
-                # not supported for source databases as shown following.
-                # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TableMapping.SelectionTransformation.Tablesettings.html#CHAP_Tasks.CustomizingTasks.TableMapping.SelectionTransformation.Tablesettings.Wildcards
-                # Here: Exact schema and table required when using object mapping rule with '3.5' engine.
-                {
-                    "rule-type": "object-mapping",
-                    "rule-id": "2",
-                    "rule-name": "DefaultMapToKinesis",
-                    "rule-action": "map-record-to-record",
-                    "object-locator": {"schema-name": "public", "table-name": "foo"},
-                    "filters": [],
-                },
-            ]
+        replication_settings = {
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.BeforeImage.html
+            "BeforeImageSettings": {
+                "EnableBeforeImage": True,
+                "FieldName": "before-image",
+                "ColumnFilter": "pk-only",
+            },
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.Logging.html
+            "Logging": {
+                "EnableLogging": True,
+                "EnableLogContext": True,
+                # ERROR: Feature is not accessible.
+                # TODO: "LogConfiguration": {"EnableTraceOnError": True},
+                "LogComponents": [
+                    {"Id": "COMMON", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "ADDONS", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "DATA_STRUCTURE", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "COMMUNICATION", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "FILE_TRANSFER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "FILE_FACTORY", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "METADATA_MANAGER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "IO", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "PERFORMANCE", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "SORTER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "SOURCE_CAPTURE", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "SOURCE_UNLOAD", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "TABLES_MANAGER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "TARGET_APPLY", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "TARGET_LOAD", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "TASK_MANAGER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "TRANSFORMATION", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    {"Id": "REST_SERVER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                    # Replication Settings document error: Unsupported keys were found: VALIDATOR
+                    # {"Id": "VALIDATOR", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},  # noqa: ERA001
+                    {"Id": "VALIDATOR_EXT", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
+                ],
+            },
         }
 
-        serverless_replication = dms.ReplicationConfig(  # type: ignore[call-arg,misc]
+        """
+        replication = dms.ReplicationConfig(  # type: ignore[call-arg,misc]
             "DMSReplicationConfig",
             rp_ReplicationConfigIdentifier=f"{self.env_name}-dms-serverless",
             # p_ResourceIdentifier=f"{self.env_name}-dms-serverless-resource",  # noqa: ERA001
@@ -521,44 +568,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                 p_VpcSecurityGroupIds=[self._db_security_group.ref(), dms_security_group.ref()],
             ),
             rp_TableMappings=map_to_kinesis,
-            p_ReplicationSettings={
-                # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.BeforeImage.html
-                "BeforeImageSettings": {
-                    "EnableBeforeImage": True,
-                    "FieldName": "before-image",
-                    "ColumnFilter": "pk-only",
-                },
-                # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.Logging.html
-                "Logging": {
-                    "EnableLogging": True,
-                    "EnableLogContext": True,
-                    # ERROR: Feature is not accessible.
-                    # TODO: "LogConfiguration": {"EnableTraceOnError": True},
-                    "LogComponents": [
-                        {"Id": "COMMON", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "ADDONS", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "DATA_STRUCTURE", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "COMMUNICATION", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "FILE_TRANSFER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "FILE_FACTORY", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "METADATA_MANAGER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "IO", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "PERFORMANCE", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "SORTER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "SOURCE_CAPTURE", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "SOURCE_UNLOAD", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "TABLES_MANAGER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "TARGET_APPLY", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "TARGET_LOAD", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "TASK_MANAGER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "TRANSFORMATION", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        {"Id": "REST_SERVER", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                        # Replication Settings document error: Unsupported keys were found: VALIDATOR
-                        # {"Id": "VALIDATOR", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},  # noqa: ERA001
-                        {"Id": "VALIDATOR_EXT", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
-                    ],
-                },
-            },
+            p_ReplicationSettings=replication_settings,
             ra_DependsOn=[
                 dms_replication_subnet_group,
                 dms_security_group,
@@ -569,25 +579,58 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                 target_endpoint,
             ],
         )
-        group.add(serverless_replication)
+        group.add(replication)
 
-        replication_arn = cf.Output(
-            "ReplicationArn",
-            Value=serverless_replication.rv_ReplicationConfigArn,
+        replication_config_arn = cf.Output(
+            "ReplicationConfigArn",
+            Value=replication.rv_ReplicationConfigArn,
         )
-        group.add(replication_arn)
+        group.add(replication_config_arn)
+        return self.add(group)
+        """
+
+        replication = dms.ReplicationTask(  # type: ignore[call-arg,misc]
+            "DMSReplicationTask",
+            # TODO: Use existing replication instance on demand.
+            # FIXME: Make configurable.
+            rp_ReplicationInstanceArn=self._dms_instance.ref(),
+            p_ReplicationTaskIdentifier=f"{self.env_name}-dms-task",
+            # p_ResourceIdentifier=f"{self.env_name}-dms-serverless-resource",  # noqa: ERA001
+            rp_MigrationType="full-load-and-cdc",
+            rp_SourceEndpointArn=source_endpoint.ref(),
+            rp_TargetEndpointArn=target_endpoint.ref(),
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TableMapping.SelectionTransformation.html
+            rp_TableMappings=json.dumps(dms_table_mapping),
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.html
+            p_ReplicationTaskSettings=json.dumps(replication_settings),
+            ra_DependsOn=[
+                self._dms_instance,
+                source_endpoint,
+                target_endpoint,
+            ],
+            ra_DeletionPolicy="Retain",
+        )
+        group.add(replication)
+
+        replication_task_arn = cf.Output(
+            "ReplicationTaskArn",
+            Value=replication.ref(),
+        )
+        group.add(replication_task_arn)
 
         return self.add(group)
 
     @property
-    def stream_arn(self):
-        return self._stream.rv_Arn
+    def stream_arn(self) -> GetAtt:
+        if self._stream_source is None:
+            raise ValueError("Kinesis Stream source not defined")
+        return self._stream_source.rv_Arn
 
-    def processor(self, proc: LambdaFactory):
+    def processor(self, factory: LambdaFactory, environment: t.Dict[str, str]):
         """
         Manifest the main processor component of this pipeline.
         """
-        self._processor = proc.make(self, environment=self.environment)
+        self._processor = factory.make(self, environment=environment)
         return self.add(self._processor.group)
 
     def connect(self):
@@ -609,17 +652,17 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         """
         if not self._processor:
             raise RuntimeError("No processor defined")
-        if not self._event_source:
-            raise RuntimeError("No event source defined")
+        if not self._stream_source:
+            raise RuntimeError("No Kinesis stream defined")
 
         # Get a handle to the AWS Lambda for dependency management purposes.
         awsfunc = self._processor.function
 
         # Create a mapping and add it to the stack.
         mapping = awslambda.EventSourceMapping(
-            id="EventSourceToLambdaMapping",
+            id="KinesisToLambdaMapping",
             rp_FunctionName=awsfunc.p_FunctionName,
-            p_EventSourceArn=self._event_source.rv_Arn,
+            p_EventSourceArn=self._stream_source.rv_Arn,
             p_BatchSize=2500,
             # LATEST - Read only new records.
             # TRIM_HORIZON - Process all available records.
