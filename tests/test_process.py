@@ -24,6 +24,7 @@ def test_kinesis_dynamodb_cratedb_lambda_basic(mocker, cratedb, reset_handler):
 
     # Configure.
     handler_environment = {
+        "MESSAGE_FORMAT": "dynamodb",
         "SINK_SQLALCHEMY_URL": cratedb.get_connection_url(),
         "SINK_TABLE": "testdrive-dynamodb-cdc",
     }
@@ -59,6 +60,7 @@ def test_kinesis_dynamodb_cratedb_lambda_batch(mocker, cratedb, reset_handler):
 
     # Configure.
     handler_environment = {
+        "MESSAGE_FORMAT": "dynamodb",
         "SINK_SQLALCHEMY_URL": cratedb.get_connection_url(),
         "SINK_TABLE": "testdrive-dynamodb-cdc",
         "USE_BATCH_PROCESSING": "true",
