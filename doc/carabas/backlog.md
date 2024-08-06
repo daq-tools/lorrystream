@@ -17,3 +17,5 @@
 - [ ] Improve efficiency by using bulk operations when applicable
 - [ ] is in UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS state and can not be updated
 - [ ] is in ROLLBACK_COMPLETE state and can not be updated.
+- [ ] Cannot create a publicly accessible DBInstance. The specified VPC has no
+  internet gateway attached.Update the VPC and then try again

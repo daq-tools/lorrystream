@@ -88,7 +88,7 @@ dependencies = [
   "click<9",
   "colorama<1",
   "colorlog",
-  "commons-codec==0.0.2",
+  "commons-codec==0.0.3",
   "cottonformation<1.2",
   "dask",
   "funcy",
