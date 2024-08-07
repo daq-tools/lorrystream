@@ -32,7 +32,7 @@ the templated commands 1:1.
 ```shell
 aws_id=831394476016
 aws_region=eu-central-1
-repository_name=cratedb-kinesis-lambda
+repository_name=kinesis-cratedb-lambda
 ```
 ```shell
 aws ecr get-login-password --region=${aws_region} | \
@@ -65,7 +65,7 @@ denied: Your authorization token has expired. Reauthenticate and try again.
 This error message indicates your ECR repository does not exist. The solution
 is to create it, using the command shared above.
 ```text
-name unknown: The repository with name 'cratedb-kinesis-lambda' does
+name unknown: The repository with name 'kinesis-cratedb-lambda' does
 not exist in the registry with id '831394476016'
 ```
 

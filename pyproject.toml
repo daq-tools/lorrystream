@@ -169,6 +169,7 @@ line-length = 120
 extend-exclude = [
   "amqp-to-mqtt.py",
   "dms_next\\.py$",
+  "lorrystream/carabas/aws/cf/*.py",
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
   "workbench.py",
@@ -213,7 +214,7 @@ lint.extend-ignore = [
   "RET505",
 ]
 
-lint.per-file-ignores."amazon_kclpy_helper" = [ "T201" ]       # Allow `print`
+lint.per-file-ignores."amazon_kclpy_helper.py" = [ "T201" ]    # Allow `print`
 lint.per-file-ignores."examples/*" = [ "T201" ]                # Allow `print`
 lint.per-file-ignores."lorrystream/util/about.py" = [ "T201" ] # Allow `print`
 lint.per-file-ignores."test_*.py" = [ "S101" ]                 # Use of `assert` detected
@@ -245,6 +246,10 @@ markers = [
 branch = false
 omit = [
   "tests/*",
+  "lorrystream/carabas/aws/function/zip.py",
+  "lorrystream/spike/*",
+  # It is tested, but code coverage tracking does not work well.
+  "lorrystream/process/kinesis_cratedb_lambda.py",
 ]
 source = [ "lorrystream" ]
 
@@ -254,8 +259,8 @@ show_missing = true
 
 [tool.mypy]
 packages = [ "lorrystream" ]
-extend-exclude = [
-  "lorrystream/carabas/aws/cf/*.py",
+exclude = [
+  "dms_next.py",
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
 ]
