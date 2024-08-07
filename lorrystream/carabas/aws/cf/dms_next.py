@@ -4,7 +4,7 @@ import attr
 from cottonformation.core.constant import AttrMeta
 from cottonformation.core.model import GetAtt, Property, Resource, Tag, TypeCheck, TypeHint
 from cottonformation.res.dms import Endpoint as EndpointVanilla
-from cottonformation.res.dms import PropEndpointKinesisSettings, ReplicationSubnetGroup
+from cottonformation.res.dms import PropEndpointKinesisSettings, ReplicationSubnetGroup, ReplicationInstance, ReplicationTask
 
 
 @attr.s
