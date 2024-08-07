@@ -65,7 +65,8 @@ class LambdaFactory:
         if self.code is None and self.oci_uri is None:
             raise ValueError("Please configure either `code` or `image`")
 
-    def make(self, stack: GenericEnvStack, environment: t.Dict[str, str]) -> LambdaResource:
+    def make(self, stack: GenericEnvStack, environment: t.Dict[str, str] = None) -> LambdaResource:
+        environment = environment or {}
         group = ResourceGroup()
 
         # IAM role for executing the Lambda function.

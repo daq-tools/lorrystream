@@ -30,7 +30,7 @@ def main():
 
     # Build and publish OCI image that includes the AWS Lambda function.
     python_image = LambdaPythonImage(
-        name="cratedb-kinesis-lambda",
+        name="kinesis-cratedb-lambda",
         entrypoint_file=Path("./lorrystream/process/kinesis_cratedb_lambda.py"),
         entrypoint_handler="kinesis_cratedb_lambda.handler",
     )
