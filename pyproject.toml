@@ -5,10 +5,6 @@ requires = [
   "versioningit",
 ]
 
-[tool.versioningit.vcs]
-method = "git"
-default-tag = "0.0.0"
-
 [project]
 name = "lorrystream"
 description = "A lightweight and polyglot stream-processing library, to be used as a data backplane-, message relay-, or pipeline-subsystem."
@@ -102,8 +98,7 @@ dependencies = [
   "streamz",
   "toolz",
 ]
-[project.optional-dependencies]
-develop = [
+optional-dependencies.develop = [
   "black<25",
   "mypy<1.12",
   "pika-stubs<0.2",
@@ -112,11 +107,20 @@ develop = [
   "ruff<0.6",
   "validate-pyproject<0.19",
 ]
-release = [
+optional-dependencies.docs = [
+  "furo==2024.4.27",
+  "myst-parser[linkify]>=0.18,<4",
+  "sphinx-autobuild==2021.3.14",   # Newer versions stopped "watching" appropriately?
+  "sphinx-copybutton",
+  "sphinx-design-elements<1",
+  "sphinxcontrib-mermaid<1",
+  "sphinxext-opengraph<1",
+]
+optional-dependencies.release = [
   "build<2",
   "twine<6",
 ]
-test = [
+optional-dependencies.test = [
   "cratedb-toolkit[testing]==0.0.15",
   "pytest<9",
   "pytest-asyncio-cooperative",
@@ -124,46 +128,79 @@ test = [
   "pytest-mqtt>=0.4.2,<0.5",
   "testcontainer-python-rabbitmq==0.4.*",
 ]
-[project.urls]
-Changelog = "https://github.com/daq-tools/lorrystream/blob/main/CHANGES.rst"
-Documentation = "https://github.com/daq-tools/lorrystream"
-Homepage = "https://github.com/daq-tools/lorrystream"
-Issues = "https://github.com/daq-tools/lorrystream/issues"
-Repository = "https://github.com/daq-tools/lorrystream"
-[project.scripts]
-lorry = "lorrystream.cli:cli"
-[project.entry-points."streamz.sinks"]
-dataframe_to_sql = "lorrystream.streamz.sinks:dataframe_to_sql"
-[project.entry-points."streamz.sources"]
-from_amqp = "lorrystream.streamz.sources:from_amqp"
-from_mqtt_plus = "lorrystream.streamz.sources:from_mqtt_plus"
+urls.Changelog = "https://lorrystream.readthedocs.io/changes.html"
+urls.Documentation = "https://lorrystream.readthedocs.io/"
+urls.Homepage = "https://lorrystream.readthedocs.io/"
+urls.Issues = "https://github.com/daq-tools/lorrystream/issues"
+urls.Repository = "https://github.com/daq-tools/lorrystream"
+scripts.lorry = "lorrystream.cli:cli"
+entry-points."streamz.sinks".dataframe_to_sql = "lorrystream.streamz.sinks:dataframe_to_sql"
+entry-points."streamz.sources".from_amqp = "lorrystream.streamz.sources:from_amqp"
+entry-points."streamz.sources".from_mqtt_plus = "lorrystream.streamz.sources:from_mqtt_plus"
+
+[tool.setuptools.packages.find]
+namespaces = false
+
+# ===================
+# Tasks configuration
+# ===================
 
 [tool.black]
 line-length = 120
 extend-exclude = "lorrystream/streamz/amqp.py"
 
-[tool.coverage.run]
-branch = false
-omit = [
-  "tests/*",
-]
-source = ["lorrystream"]
+[tool.ruff]
+line-length = 120
 
-[tool.coverage.report]
-fail_under = 0
-show_missing = true
-
-[tool.mypy]
-packages = ["lorrystream"]
-exclude = [
+extend-exclude = [
+  "amqp-to-mqtt.py",
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
+  "workbench.py",
 ]
-check_untyped_defs = true
-ignore_missing_imports = true
-implicit_optional = true
-install_types = true
-non_interactive = true
+
+lint.select = [
+  # Builtins
+  "A",
+  # Bugbear
+  "B",
+  # comprehensions
+  "C4",
+  # Pycodestyle
+  "E",
+  # eradicate
+  "ERA",
+  # Pyflakes
+  "F",
+  # isort
+  "I",
+  # pandas-vet
+  "PD",
+  # return
+  "RET",
+  # Bandit
+  "S",
+  # print
+  "T20",
+  "W",
+  # flake8-2020
+  "YTT",
+]
+
+lint.extend-ignore = [
+  # zip() without an explicit strict= parameter
+  "B905",
+  # df is a bad variable name. Be kinder to your future self.
+  "PD901",
+  # Unnecessary variable assignment before `return` statement
+  "RET504",
+  # Unnecessary `elif` after `return` statement
+  "RET505",
+]
+
+lint.per-file-ignores."examples/*" = [ "T201" ]                # Allow `print`
+lint.per-file-ignores."lorrystream/util/about.py" = [ "T201" ] # Allow `print`
+lint.per-file-ignores."tests/*" = [ "S101" ]                   # Use of `assert` detected
 
 [tool.pytest.ini_options]
 addopts = """
@@ -183,73 +220,48 @@ markers = [
   "slow",
 ]
 
-[tool.ruff]
-line-length = 120
-
-lint.select = [
-  # Bandit
-  "S",
-  # Bugbear
-  "B",
-  # Builtins
-  "A",
-  # comprehensions
-  "C4",
-  # eradicate
-  "ERA",
-  # flake8-2020
-  "YTT",
-  # isort
-  "I",
-  # pandas-vet
-  "PD",
-  # print
-  "T20",
-  # Pycodestyle
-  "E",
-  "W",
-  # Pyflakes
-  "F",
-  # return
-  "RET",
+[tool.coverage.run]
+branch = false
+omit = [
+  "tests/*",
 ]
+source = [ "lorrystream" ]
 
-lint.extend-ignore = [
-  # zip() without an explicit strict= parameter
-  "B905",
-  # df is a bad variable name. Be kinder to your future self.
-  "PD901",
-  # Unnecessary variable assignment before `return` statement
-  "RET504",
-  # Unnecessary `elif` after `return` statement
-  "RET505",
-]
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
 
-extend-exclude = [
+[tool.mypy]
+packages = [ "lorrystream" ]
+exclude = [
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
-  "amqp-to-mqtt.py",
-  "workbench.py",
 ]
+check_untyped_defs = true
+ignore_missing_imports = true
+implicit_optional = true
+install_types = true
+non_interactive = true
 
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]  # Use of `assert` detected
-"examples/*" = ["T201"]  # Allow `print`
-"lorrystream/util/about.py" = ["T201"]  # Allow `print`
-
-[tool.setuptools.packages.find]
-namespaces = false
-
-
-# ===================
-# Tasks configuration
-# ===================
+[tool.versioningit.vcs]
+method = "git"
+default-tag = "0.0.0"
 
 [tool.poe.tasks]
 
 check = [
   "lint",
   "test",
+]
+
+docs-autobuild = [
+  { cmd = "sphinx-autobuild --open-browser --watch lorrystream doc doc/_build" },
+]
+docs-html = [
+  { cmd = "sphinx-build -W --keep-going doc doc/_build" },
+]
+docs-linkcheck = [
+  { cmd = "sphinx-build -W --keep-going -b linkcheck doc doc/_build" },
 ]
 
 format = [

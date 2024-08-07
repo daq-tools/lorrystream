@@ -1,15 +1,15 @@
+# An introduction and overview about Singer
+
 ## About
 
 An introduction to the Singer ecosystem of data pipeline components for
-composable open source ETL.
+composable open source [ETL], revolving around topics in [data integration].
 
-Singer, Meltano, PipelineWise, and Airbyte, provide components and integration
-engines adhering to the Singer specification.
+All of Singer, Meltano, PipelineWise, and Airbyte provide components and
+integration engines adhering to the Singer specification.
 
 On the database integration side, the [connectors] of Singer and Meltano are
 based on [SQLAlchemy].
-
-https://en.wikipedia.org/wiki/Data_integration
 
 
 ## Overview
@@ -238,6 +238,7 @@ efficiency, and innovation.
 
 [Clarify in docs relationship to Singer project from Stitch/Talend]: https://github.com/airbytehq/airbyte/issues/445
 [connectors]: https://hub.meltano.com/
+[data integration]: https://en.wikipedia.org/wiki/Data_integration
 [ELT]: https://en.wikipedia.org/wiki/Extract,_load,_transform
 [ETL]: https://en.wikipedia.org/wiki/Extract,_transform,_load
 [Estuary helps enterprises harness historical and real-time data pipelines]: https://venturebeat.com/business/how-estuary-helps-enterprises-harness-historical-and-real-time-data-pipelines/

@@ -2,6 +2,7 @@
 /.idea
 /.venv*
 /dist
+/doc/_build
 /tmp
 /var
 .DS_Store
