@@ -69,6 +69,13 @@ name unknown: The repository with name 'cratedb-kinesis-lambda' does
 not exist in the registry with id '831394476016'
 ```
 
+Get information about Lambda function.
+```shell
+aws lambda get-function \
+  --function-name arn:aws:lambda:eu-central-1:831394476016:function:moll-stack-dynamodb-dev-lambda-processor
+```
+
+
 
 ## CrateDB Table
 The destination table name in CrateDB, where the CDC record
