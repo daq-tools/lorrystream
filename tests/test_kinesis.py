@@ -9,16 +9,11 @@ Verify connectivity with Amazon Kinesis.
 import logging
 import time
 
-import boto3
-
 logger = logging.getLogger(__name__)
 
 
-def test_kinesis_stream_operations(localstack):
-    kinesis = boto3.client(
-        service_name="kinesis",
-        endpoint_url="http://localhost:4566",
-    )
+def test_kinesis_stream_operations(localstack, boto3_session):
+    kinesis = boto3_session.client("kinesis")
 
     kinesis.create_stream(StreamName="test", ShardCount=1)
     time.sleep(0.1)
