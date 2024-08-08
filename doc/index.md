@@ -31,6 +31,7 @@
 source/amqp
 source/mqtt
 sink/database
+carabas/index
 ```
 
 ```{toctree}

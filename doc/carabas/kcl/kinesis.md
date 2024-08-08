@@ -1,4 +1,4 @@
-# Kinesis Streams to CrateDB
+# Kinesis Streams with KCLv2
 
 ## About
 A stream processor component using the [Kinesis Client Library (KCL)].
