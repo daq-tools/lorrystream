@@ -83,20 +83,15 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "async-kinesis<1.2",
-  "aws-lambda-layer<0.6",
   "boltons",
-  "boto3<1.35",
   "click<9",
   "colorama<1",
   "colorlog",
   "commons-codec==0.0.3",
-  "cottonformation<1.2",
   "dask",
   "funcy",
   "influxdb",
   "influxdb-client[ciso]",
-  "localstack[runtime]<3.7",
   "paho-mqtt",
   "pandas<2.3",
   "pika<1.4",
@@ -105,6 +100,17 @@ dependencies = [
   "sqlalchemy-cratedb==0.38.0",
   "streamz",
   "toolz",
+]
+optional-dependencies.all = [
+  "lorrystream[carabas]",
+]
+optional-dependencies.carabas = [
+  "aiobotocore==2.13.*",          # for async-kinesis
+  "async-kinesis<1.2",
+  "aws-lambda-layer<0.6",
+  "boto3==1.34.*",                # for async-kinesis
+  "cottonformation<1.2",
+  "localstack[base-runtime]<3.7",
 ]
 optional-dependencies.develop = [
   "black<25",
@@ -134,6 +140,7 @@ optional-dependencies.test = [
   # https://github.com/docker/docker-py/issues/3256#issuecomment-2126888985
   "cratedb-toolkit[testing]==0.0.15",
   "docker<7",
+  "localstack-utils<1.1",
   "pytest<9",
   "pytest-asyncio-cooperative<0.30",
   "pytest-cov<6",

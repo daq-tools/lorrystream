@@ -6,7 +6,7 @@ import pytest
 from lorrystream.util.common import setup_logging
 
 from .fixtures.amqp import rabbitmq, rabbitmq_service  # noqa: F401
-from .fixtures.localstack import localstack, localstack_service  # noqa: F401
+from .fixtures.localstack import boto3_configure_localstack, boto3_session, localstack, localstack_service  # noqa: F401
 
 
 @pytest.fixture
