@@ -1,4 +1,4 @@
-# Amazon Kinesis Source
+# Kinesis Source
 
 ## LocalStack Testbed
 The recipe uses the LocalStack AWS environment to run an Amazon Kinesis surrogate.

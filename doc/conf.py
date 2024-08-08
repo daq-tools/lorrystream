@@ -53,12 +53,12 @@ html_theme_options = {
     "light_css_variables": {
         "color-brand-primary": "#CC3333",
         "color-brand-content": "darkblue",
-        "color-admonition-background": "orange",
+        # "color-admonition-background": "orange",
     },
     "dark_css_variables": {
         "color-brand-primary": "#CC3333",
         "color-brand-content": "gold",
-        "color-admonition-background": "orange",
+        # "color-admonition-background": "orange",
     },
 }
 
