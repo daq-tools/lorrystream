@@ -83,10 +83,11 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "aiobotocore==2.13.*",          # for async-kinesis
   "async-kinesis<1.2",
   "aws-lambda-layer<0.6",
   "boltons",
-  "boto3<1.35",
+  "boto3==1.34.*",                # for async-kinesis
   "click<9",
   "colorama<1",
   "colorlog",
@@ -96,10 +97,11 @@ dependencies = [
   "funcy",
   "influxdb",
   "influxdb-client[ciso]",
-  "localstack[runtime]<3.7",
+  "localstack[base-runtime]<3.7",
   "paho-mqtt",
   "pandas<2.3",
   "pika<1.4",
+  "requests==2.31.0",
   "simplejson<4",
   "sqlalchemy==2.0.*",
   "sqlalchemy-cratedb==0.38.0",
