@@ -29,8 +29,10 @@
 :hidden:
 
 source/amqp
+source/kinesis
 source/mqtt
 sink/database
+carabas/index
 ```
 
 ```{toctree}
