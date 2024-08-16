@@ -24,7 +24,7 @@ Resources:
 # /// script
 # requires-python = ">=3.9"
 # dependencies = [
-#   "commons-codec==0.0.5",
+#   "commons-codec==0.0.6",
 #   "sqlalchemy-cratedb==0.38.0",
 # ]
 # ///

@@ -1,6 +1,7 @@
 # Changelog
 
 ## in progress
+- Dependencies: Update to `commons-codec` version 0.0.6
 
 ## 2024-08-16 v0.0.3
 - Carabas: A subsystem to divert workloads to other people’s computers
