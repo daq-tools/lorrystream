@@ -1,6 +1,8 @@
 # Changelog
 
 ## in progress
+
+## 2024-08-16 v0.0.4
 - Dependencies: Update to `commons-codec` version 0.0.6
 
 ## 2024-08-16 v0.0.3
