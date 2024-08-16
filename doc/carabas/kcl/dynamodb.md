@@ -121,15 +121,16 @@ aws kinesis delete-stream --stream-name dynamodb-cdc --enforce-consumer-deletion
 
 Acquire sources and initialize sandbox.
 ```shell
-git clone https://github.com/daq-tools/lorrystream --branch=kinesis
+git clone https://github.com/daq-tools/lorrystream
 cd lorrystream
 python3 -m venv .venv
 source .venv/bin/activate
+pip install --editable='.[carabas]'
 ```
 
 Install dependencies, mainly the [amazon-kclpy] package.
 ```shell
-cd lorrystream/dynamodb_cloud
+cd lorrystream/spike/kcl_dynamodb
 pip install wheel
 pip install --verbose -r requirements.txt
 ```
@@ -141,7 +142,7 @@ virtualenv on the top-level directory. Then, navigate to the playground
 directory, and seed AWS credentials.
 ```shell
 source .venv/bin/activate
-cd lorrystream/dynamodb_cloud
+cd lorrystream/spike/kcl_dynamodb
 export AWS_ACCESS_KEY=...
 export AWS_SECRET_ACCESS_KEY=...
 ```

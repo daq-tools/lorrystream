@@ -1,9 +1,19 @@
 # Kinesis Source
 
-## LocalStack Testbed
-The recipe uses the LocalStack AWS environment to run an Amazon Kinesis surrogate.
+This recipe uses the LocalStack AWS environment to run an Amazon Kinesis surrogate.
 The walkthrough follows the [Get started with Kinesis on LocalStack] tutorial.
 
+If you intend to invoke the commands on a real AWS environment, just use `aws`
+instead of `awslocal`.
+
+:::{tip}
+LocalStack is a cloud service emulator that runs in a single container on your
+laptop or in your CI environment. With LocalStack, you can run your AWS
+applications or Lambdas entirely on your local machine without connecting to
+a remote cloud provider.
+:::
+
+## Setup
 Start the LocalStack service using Docker.
 ```shell
 docker run \
@@ -13,17 +23,13 @@ docker run \
   -v /var/run/docker.sock:/var/run/docker.sock \
   localstack/localstack:3.6
 ```
-:::{tip}
-LocalStack is a cloud service emulator that runs in a single container on your
-laptop or in your CI environment. With LocalStack, you can run your AWS
-applications or Lambdas entirely on your local machine without connecting to
-a remote cloud provider.
-:::
 
 Install LorryStream including LocalStack CLI programs.
 ```shell
-pip install lorrystream
+pip install --upgrade 'lorrystream[carabas]'
 ```
+
+## Configure
 Create a Kinesis Data Stream called `testdrive`.
 ```shell
 awslocal kinesis create-stream \
@@ -43,6 +49,7 @@ Display Stream ARN.
 awslocal kinesis describe-stream --stream-name testdrive | jq -r .StreamDescription.StreamARN
 ```
 
+## Usage
 Submit an item to the data stream, using `awslocal`.
 ```shell
 awslocal kinesis put-record \
@@ -63,5 +70,11 @@ This is suitable for debugging purposes.
 export AWS_ENDPOINT_URL="http://localhost:4566"
 python examples/aws/kinesis_subscribe.py testdrive
 ```
+
+:::{todo}
+Demonstrate how to add a processor pipeline element using both either
+AWS Lambda, or a dedicated processor instance.
+:::
+
 
 [Get started with Kinesis on LocalStack]: https://docs.localstack.cloud/user-guide/aws/kinesis/
