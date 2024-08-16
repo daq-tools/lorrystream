@@ -1,7 +1,7 @@
 import re
 import typing as t
 
-import tomllib
+import tomli
 
 PEP_723_REGEX = r"(?m)^# /// (?P<type>[a-zA-Z0-9-]+)$\s(?P<content>(^#(| .*)$\s)+)^# ///$"
 
@@ -22,6 +22,6 @@ def read_inline_script_metadata(script: str) -> t.Dict[str, t.Any]:
             line[2:] if line.startswith("# ") else line[1:]
             for line in matches[0].group("content").splitlines(keepends=True)
         )
-        return tomllib.loads(content)
+        return tomli.loads(content)
     else:
         return {}

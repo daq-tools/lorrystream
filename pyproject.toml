@@ -99,6 +99,7 @@ dependencies = [
   "sqlalchemy==2.0.*",
   "sqlalchemy-cratedb==0.38.0",
   "streamz",
+  "tomli",
   "toolz",
 ]
 optional-dependencies.all = [
