@@ -26,7 +26,7 @@ help.
 ### Install
 Install LorryStream.
 ```shell
-pip install lorrystream
+pip install --upgrade 'lorrystream[carabas]'
 ```
 Acquire IaC driver program.
 ```shell

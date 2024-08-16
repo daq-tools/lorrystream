@@ -1,7 +1,7 @@
 # Changelog
 
 ## in progress
-- Started unlocking AWS Kinesis stream sources
+- Carabas: A subsystem to divert workloads to other people’s computers
 
 ## 2024-07-10 v0.0.2
 - Initial working version, supporting MQTT, AMQP, and SQLAlchemy/CrateDB
