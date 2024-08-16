@@ -1,6 +1,8 @@
 # Changelog
 
 ## in progress
+
+## 2024-08-16 v0.0.3
 - Carabas: A subsystem to divert workloads to other people’s computers
 
 ## 2024-07-10 v0.0.2
