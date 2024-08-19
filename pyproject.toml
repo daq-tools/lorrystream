@@ -120,7 +120,7 @@ optional-dependencies.develop = [
   "poethepoet<0.28",
   "pyproject-fmt<2.3",
   "ruff<0.6",
-  "validate-pyproject<0.19",
+  "validate-pyproject<0.20",
 ]
 optional-dependencies.docs = [
   "furo==2024.1.29",
