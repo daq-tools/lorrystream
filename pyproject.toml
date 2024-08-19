@@ -140,7 +140,7 @@ optional-dependencies.test = [
   # Solution: Pin `docker` and `requests` packages.
   # https://github.com/docker/docker-py/issues/3256#issuecomment-2126888985
   "cratedb-toolkit[testing]==0.0.15",
-  "docker<7",
+  "docker<8",
   "localstack-utils<1.1",
   "pytest<9",
   "pytest-asyncio-cooperative<0.30",
