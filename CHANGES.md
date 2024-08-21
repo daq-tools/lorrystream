@@ -1,6 +1,8 @@
 # Changelog
 
 ## in progress
+
+## 2024-08-21 v0.0.5
 - Dependencies: Unpin commons-codec, to always use the latest version
 
 ## 2024-08-16 v0.0.4
