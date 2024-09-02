@@ -143,7 +143,7 @@ optional-dependencies.test = [
   "docker<8",
   "localstack-utils<1.1",
   "pytest<9",
-  "pytest-asyncio-cooperative<0.30",
+  "pytest-asyncio-cooperative<0.38",
   "pytest-cov<6",
   "pytest-mock<4",
   "pytest-mqtt>=0.4.2,<0.5",
