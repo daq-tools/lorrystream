@@ -139,7 +139,7 @@ optional-dependencies.test = [
   # Problem: Breaks with requests 2.32.0: Not supported URL scheme http+docker.
   # Solution: Pin `docker` and `requests` packages.
   # https://github.com/docker/docker-py/issues/3256#issuecomment-2126888985
-  "cratedb-toolkit[testing]==0.0.15",
+  "cratedb-toolkit[testing]==0.0.20",
   "docker<8",
   "localstack-utils<1.1",
   "pytest<9",
