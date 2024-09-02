@@ -25,7 +25,7 @@ Resources:
 # requires-python = ">=3.9"
 # dependencies = [
 #   "commons-codec",
-#   "sqlalchemy-cratedb==0.38.0",
+#   "sqlalchemy-cratedb>=0.38.0",
 # ]
 # ///
 import base64
@@ -38,7 +38,7 @@ import sqlalchemy as sa
 from commons_codec.exception import UnknownOperationError
 from commons_codec.model import ColumnTypeMapStore
 from commons_codec.transform.aws_dms import DMSTranslatorCrateDB
-from commons_codec.transform.dynamodb import DynamoCDCTranslatorCrateDB
+from commons_codec.transform.dynamodb import DynamoDBCDCTranslator
 from sqlalchemy.util import asbool
 
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
@@ -79,7 +79,7 @@ except Exception as ex:
 if MESSAGE_FORMAT == "dms":
     cdc = DMSTranslatorCrateDB(column_types=column_types)
 elif MESSAGE_FORMAT == "dynamodb":
-    cdc = DynamoCDCTranslatorCrateDB(table_name=SINK_TABLE)
+    cdc = DynamoDBCDCTranslator(table_name=SINK_TABLE)
 
 # Create the database connection outside the handler to allow
 # connections to be re-used by subsequent function invocations.
@@ -121,8 +121,8 @@ def handler(event, context):
             logger.debug(f"Record Data: {record_data}")
 
             # Process record.
-            sql = cdc.to_sql(record_data)
-            connection.execute(sa.text(sql))
+            operation = cdc.to_sql(record_data)
+            connection.execute(sa.text(operation.statement), operation.parameters)
             connection.commit()
 
             # Bookkeeping.
