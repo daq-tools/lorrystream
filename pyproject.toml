@@ -117,7 +117,7 @@ optional-dependencies.develop = [
   "black<25",
   "mypy<1.12",
   "pika-stubs<0.2",
-  "poethepoet<0.28",
+  "poethepoet<0.33",
   "pyproject-fmt<2.3",
   "ruff<0.6",
   "validate-pyproject<0.20",
