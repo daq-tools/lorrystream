@@ -5,6 +5,7 @@ import json
 import sys
 import typing as t
 
+import orjson
 import pandas as pd
 
 
@@ -85,3 +86,15 @@ def split_list(value: str, delimiter: str = ",") -> t.List[str]:
     if value is None:
         return []
     return [c.strip() for c in value.split(delimiter)]
+
+
+def orjson_serializer(obj):
+    import pendulum
+
+    if isinstance(obj, pendulum.DateTime):
+        return str(obj)
+    raise TypeError
+
+
+def to_json(obj) -> str:
+    return orjson.dumps(obj, default=orjson_serializer).decode("utf-8")
