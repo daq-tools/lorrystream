@@ -93,11 +93,11 @@ dependencies = [
   "funcy",
   "influxdb",
   "influxdb-client[ciso]",
+  "orjson",
   "paho-mqtt",
   "pandas<2.3",
   "pika<1.4",
   "simplejson<4",
-  "sqlalchemy==2.0.*",
   "sqlalchemy-cratedb>=0.38.0",
   "streamz",
   "tomli",
@@ -107,10 +107,10 @@ optional-dependencies.all = [
   "lorrystream[carabas]",
 ]
 optional-dependencies.carabas = [
-  "aiobotocore==2.13.*",          # for async-kinesis
-  "async-kinesis<1.2",
+  "aiobotocore==2.13.*",                                                       # for async-kinesis
+  "async-kinesis @ git+https://github.com/daq-tools/async-kinesis@stream-arn",
   "aws-lambda-layer<0.6",
-  "boto3>=1.34,<1.36",            # for async-kinesis
+  "boto3>=1.34,<1.36",                                                         # for async-kinesis
   "cottonformation<1.2",
   "localstack[base-runtime]<3.8",
 ]
@@ -132,13 +132,16 @@ optional-dependencies.docs = [
   "sphinxcontrib-mermaid<1",
   "sphinxext-opengraph<1",
 ]
+optional-dependencies.ingestr = [
+  "ingestr @ git+https://github.com/crate-workbench/ingestr@kinesis-stream-arn",
+]
 optional-dependencies.release = [
   "build<2",
   "twine<6",
 ]
 optional-dependencies.test = [
   # Problem: Breaks with requests 2.32.0: Not supported URL scheme http+docker.
-  # Solution: Pin `docker` and `requests` packages.
+  # Solution: Pin `docker` and `requests` packages using `docker<8` and `requests==2.28.1`.
   # https://github.com/docker/docker-py/issues/3256#issuecomment-2126888985
   "cratedb-toolkit[testing]==0.0.20",
   "docker<8",
