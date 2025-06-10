@@ -46,6 +46,9 @@ def main():
         db_password="secret11",  # noqa: S106
     )
 
+    # FIXME: Problem: Cannot create a publicly accessible DBInstance.
+    #        The specified VPC has no internet gateway attached.
+
     # Exclusively deploy the VPC elements of the stack.
     # Do that on the first invocation, but nothing else.
     # Warning: When doing it subsequently, it will currently delete the whole RDS substack.
@@ -53,10 +56,14 @@ def main():
     #          The specified VPC has no internet gateway attached. Update the VPC and then try again.
     # TODO: Introduce a little CLI controller for invoking different deployment steps conveniently.
     # TODO: Refactor by splitting into different stacks.
-    # stack.vpc().deploy(); return  # noqa: ERA001
+    stack.vpc().deploy()
+    return  # noqa: ERA001
+
+    # Deploy the RDS database components.
+    # stack.vpc().database().deploy(); return  # noqa: ERA001
 
     # Deploy the full RDS+DMS demo stack.
-    stack.vpc().database().stream().dms()  # .deploy(); return
+    # stack.vpc().database().stream().dms()  # .deploy(); return  # noqa: ERA001
 
     # Define mapping rules for replication.
     # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html
