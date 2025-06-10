@@ -432,7 +432,7 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             p_MultiAZ=False,
             p_ReplicationSubnetGroupIdentifier=dms_replication_subnet_group.ref(),
             p_VpcSecurityGroupIds=[dms_security_group.ref()],
-            p_EngineVersion="3.5.2",
+            p_EngineVersion="3.6.1",
             p_AllocatedStorage=5,
             p_PubliclyAccessible=True,
             p_AutoMinorVersionUpgrade=False,
