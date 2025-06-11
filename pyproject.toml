@@ -117,10 +117,10 @@ optional-dependencies.develop = [
   "black<25",
   "mypy<1.12",
   "pika-stubs<0.2",
-  "poethepoet<0.28",
-  "pyproject-fmt<2.3",
+  "poethepoet<1",
+  "pyproject-fmt<3",
   "ruff<0.6",
-  "validate-pyproject<0.20",
+  "validate-pyproject<1",
 ]
 optional-dependencies.docs = [
   "furo==2024.1.29",
