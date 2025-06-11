@@ -55,7 +55,7 @@ def get_sqlalchemy_dialects() -> t.List[str]:
 
     import sqlalchemy.dialects
 
-    builtins = sqlalchemy.dialects.__all__
+    builtins = sqlalchemy.dialects.__all__  # type: ignore[attr-defined]
     more: t.List
     if sys.version_info >= (3, 10):
         eps = entry_points(group="sqlalchemy.dialects")

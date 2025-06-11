@@ -7,7 +7,7 @@ import typing as t
 
 import pandas as pd
 import sqlalchemy as sa
-from sqlalchemy import Engine
+from sqlalchemy.engine import Engine
 from streamz import Sink, Stream
 
 from lorrystream.exceptions import InvalidSinkError

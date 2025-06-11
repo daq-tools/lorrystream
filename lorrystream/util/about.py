@@ -87,7 +87,7 @@ class AboutReport:
         import sqlalchemy.dialects
 
         subsection("SQLAlchemy")
-        print(bullet_item(sqlalchemy.dialects.__all__, label="Dialects built-in"))
+        print(bullet_item(sqlalchemy.dialects.__all__, label="Dialects built-in"))  # type: ignore[attr-defined]
         dialects: t.List[str]
         if sys.version_info >= (3, 10):
             eps = entry_points(group="sqlalchemy.dialects")
@@ -95,7 +95,7 @@ class AboutReport:
         else:
             dialects = []
         print(bullet_item(dialects, label="Dialects 3rd-party"))
-        print(bullet_item(sqlalchemy.dialects.plugins.impls.keys(), label="Plugins"))
+        print(bullet_item(sqlalchemy.dialects.plugins.impls.keys(), label="Plugins"))  # type: ignore[attr-defined]
         print()
 
         # fsspec

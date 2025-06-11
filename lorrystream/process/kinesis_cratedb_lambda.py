@@ -86,7 +86,7 @@ elif MESSAGE_FORMAT == "dynamodb":
 # TODO: Examine long-running jobs about successful reconnection behavior.
 try:
     engine = sa.create_engine(SINK_SQLALCHEMY_URL, echo=SQL_ECHO)
-    connection = engine.connect()
+    connection: sa.engine.Connection = engine.connect()
     logger.info(f"Connection to sink database succeeded: {SINK_SQLALCHEMY_URL}")
 except Exception as ex:
     logger.exception(f"Connection to sink database failed: {SINK_SQLALCHEMY_URL}")
@@ -123,7 +123,7 @@ def handler(event, context):
             # Process record.
             operation = cdc.to_sql(record_data)
             connection.execute(sa.text(operation.statement), operation.parameters)
-            connection.commit()
+            connection.commit()  # type: ignore[attr-defined]
 
             # Bookkeeping.
             cur_record_sequence_number = record["kinesis"]["sequenceNumber"]
