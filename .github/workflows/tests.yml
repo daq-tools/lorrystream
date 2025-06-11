@@ -1,11 +1,11 @@
 name: Tests
 
 on:
+  pull_request:
   push:
     branches: [ main ]
-  pull_request:
-
-  # Allow job to be triggered manually.
+  schedule:
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 # Cancel in-progress jobs when pushing to the same branch.

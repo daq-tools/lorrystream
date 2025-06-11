@@ -2,15 +2,12 @@
 name: OCI
 
 on:
+  pull_request:
   push:
     tags:
       - '*.*.*'
-  pull_request:
-
   schedule:
-    - cron: '0 06 * * *' # every day at 06am
-
-  # Allow job to be triggered manually.
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 # Cancel in-progress jobs when pushing to the same branch.
