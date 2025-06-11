@@ -155,14 +155,14 @@ class RecordProcessor(processor.RecordProcessorBase):
             logging.error("Encountered an exception while processing records. Exception was {e}\n".format(e=e))
 
     def lease_lost(self, lease_lost_input):
-        logging.warn("Lease has been lost")
+        logging.warning("Lease has been lost")
 
     def shard_ended(self, shard_ended_input):
-        logging.warn("Shard has ended checkpointing")
+        logging.warning("Shard has ended checkpointing")
         shard_ended_input.checkpointer.checkpoint()
 
     def shutdown_requested(self, shutdown_requested_input):
-        logging.warn("Shutdown has been requested, checkpointing.")
+        logging.warning("Shutdown has been requested, checkpointing.")
         shutdown_requested_input.checkpointer.checkpoint()
 
 
