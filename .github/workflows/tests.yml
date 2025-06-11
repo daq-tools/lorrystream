@@ -63,13 +63,10 @@ jobs:
       run: |
         poe check
 
-    - name: Upload coverage to Codecov
+    # https://github.com/codecov/codecov-action
+    - name: Upload coverage results to Codecov
       uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
-        files: ./coverage.xml
-        flags: unittests
-        env_vars: OS,PYTHON
-        name: codecov-umbrella
         fail_ci_if_error: true
