@@ -87,7 +87,7 @@ dependencies = [
   "click<9",
   "colorama<1",
   "colorlog",
-  "commons-codec",
+  "commons-codec==0.0.22",
   "dask",
   "funcy",
   "influxdb",

@@ -32,7 +32,15 @@ def test_kinesis_dynamodb_cratedb_lambda_basic(mocker, cratedb, reset_handler):
     mocker.patch.dict(os.environ, handler_environment)
 
     # Provision CrateDB.
-    cratedb.database.run_sql('CREATE TABLE "testdrive-dynamodb-cdc" (data OBJECT(DYNAMIC));')
+    cratedb.database.run_sql(
+        """
+        CREATE TABLE "testdrive-dynamodb-cdc" (
+            pk OBJECT(STRICT) AS ("device" STRING PRIMARY KEY, "timestamp" STRING PRIMARY KEY),
+            data OBJECT(DYNAMIC),
+            aux OBJECT(IGNORED)
+        );
+    """
+    )
 
     # Invoke Lambda handler.
     from lorrystream.process.kinesis_cratedb_lambda import handler
@@ -45,7 +53,9 @@ def test_kinesis_dynamodb_cratedb_lambda_basic(mocker, cratedb, reset_handler):
 
     records = cratedb.database.run_sql('SELECT * FROM "testdrive-dynamodb-cdc";', records=True)
     assert records[0] == {
-        "data": {"temperature": 42.42, "humidity": 84.84, "device": "foo", "timestamp": "2024-07-12T01:17:42"}
+        "pk": {"device": "foo", "timestamp": "2024-07-12T01:17:42"},
+        "data": {"temperature": 42.42, "humidity": 84.84},
+        "aux": {},
     }
 
 
@@ -69,7 +79,15 @@ def test_kinesis_dynamodb_cratedb_lambda_batch(mocker, cratedb, reset_handler):
     mocker.patch.dict(os.environ, handler_environment)
 
     # Provision CrateDB.
-    cratedb.database.run_sql('CREATE TABLE "testdrive-dynamodb-cdc" (data OBJECT(DYNAMIC));')
+    cratedb.database.run_sql(
+        """
+        CREATE TABLE "testdrive-dynamodb-cdc" (
+            pk OBJECT(STRICT) AS ("device" STRING PRIMARY KEY, "timestamp" STRING PRIMARY KEY),
+            data OBJECT(DYNAMIC),
+            aux OBJECT(IGNORED)
+        );
+    """
+    )
 
     # Invoke Lambda handler.
     from lorrystream.process.kinesis_cratedb_lambda import handler
@@ -83,7 +101,9 @@ def test_kinesis_dynamodb_cratedb_lambda_batch(mocker, cratedb, reset_handler):
 
     records = cratedb.database.run_sql('SELECT * FROM "testdrive-dynamodb-cdc";', records=True)
     assert records[0] == {
-        "data": {"temperature": 42.42, "humidity": 84.84, "device": "foo", "timestamp": "2024-07-12T01:17:42"}
+        "pk": {"device": "foo", "timestamp": "2024-07-12T01:17:42"},
+        "data": {"temperature": 42.42, "humidity": 84.84},
+        "aux": {},
     }
 
 
