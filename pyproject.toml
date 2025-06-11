@@ -107,7 +107,7 @@ optional-dependencies.all = [
   "lorrystream[carabas]",
 ]
 optional-dependencies.carabas = [
-  "aiobotocore==2.13.*",                                                       # for async-kinesis
+  "aiobotocore>=2.13,<2.23",                                                       # for async-kinesis
   "async-kinesis @ git+https://github.com/daq-tools/async-kinesis@stream-arn",
   "aws-lambda-layer<0.6",
   "boto3>=1.34,<1.36",                                                         # for async-kinesis
