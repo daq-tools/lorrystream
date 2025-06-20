@@ -3,9 +3,9 @@
 ## in progress
 
 ## 2025-06-21 v0.0.7
-- DMS: Update from engine version 3.5.2 to 3.6.1
-- Kinesis: Improve example subscriber program
-- Kinesis: Updated to `async-kinesis-2.0.0`
+- DMS: Updated from engine version 3.5.2 to 3.6.1
+- DMS: Improved stack configuration and replication settings
+- Kinesis: Improved example subscriber program
 
 ## 2024-09-02 v0.0.6
 - Dependencies: Unpin sqlalchemy-cratedb, to always use the latest version
