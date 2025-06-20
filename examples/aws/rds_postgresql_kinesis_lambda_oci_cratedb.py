@@ -68,28 +68,53 @@ def main():
     # Define mapping rules for replication.
     # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html
     # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TableMapping.html
-    # TODO: Currently hard-coded to table `public.foo`.
+    # TODO: Currently hard-coded to tables `public.foo` and `public.bar`.
     map_to_kinesis = {
         "rules": [
+            # The table selector rule allows wildcards ("%").
             {
-                "rule-type": "selection",
                 "rule-id": "1",
-                "rule-name": "DefaultInclude",
+                "rule-name": "include-public",
+                "rule-type": "selection",
                 "rule-action": "include",
-                "object-locator": {"schema-name": "public", "table-name": "foo"},
+                "object-locator": {
+                    "schema-name": "public",
+                    "table-name": "%",
+                },
                 "filters": [],
             },
+            # The object mapping rule needed for converging to Kinesis does not allow wildcards.
             # Using the percent wildcard ("%") in "table-settings" rules is
             # not supported for source databases as shown following.
+            # Error: Exact schema and table required when using object mapping rule with '3.5' engine.
             # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TableMapping.SelectionTransformation.Tablesettings.html#CHAP_Tasks.CustomizingTasks.TableMapping.SelectionTransformation.Tablesettings.Wildcards
-            # Here: Exact schema and table required when using object mapping rule with '3.5' engine.
             {
-                "rule-type": "object-mapping",
                 "rule-id": "2",
-                "rule-name": "DefaultMapToKinesis",
+                "rule-name": "map-foo",
+                "rule-type": "object-mapping",
                 "rule-action": "map-record-to-record",
-                "object-locator": {"schema-name": "public", "table-name": "foo"},
+                "object-locator": {
+                    "schema-name": "public",
+                    "table-name": "foo",
+                },
                 "filters": [],
+                "mapping-parameters": {
+                    "partition-key-type": "schema-table",
+                },
+            },
+            {
+                "rule-id": "3",
+                "rule-name": "map-bar",
+                "rule-type": "object-mapping",
+                "rule-action": "map-record-to-record",
+                "object-locator": {
+                    "schema-name": "public",
+                    "table-name": "bar",
+                },
+                "filters": [],
+                "mapping-parameters": {
+                    "partition-key-type": "schema-table",
+                },
             },
         ]
     }
