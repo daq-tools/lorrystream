@@ -141,7 +141,7 @@ optional-dependencies.release = [
 ]
 optional-dependencies.test = [
   # Problem: Breaks with requests 2.32.0: Not supported URL scheme http+docker.
-  # Solution: Pin `docker` and `requests` packages using `docker<8` and `requests==2.28.1`.
+  # Solution: Pin `docker` and `requests` packages using `docker<8` and `requests==2.32.4`.
   # https://github.com/docker/docker-py/issues/3256#issuecomment-2126888985
   "cratedb-toolkit[testing]==0.0.20",
   "docker<8",
@@ -151,7 +151,7 @@ optional-dependencies.test = [
   "pytest-cov<7",
   "pytest-mock<4",
   "pytest-mqtt>=0.4.2,<0.5",
-  "requests==2.28.1",
+  "requests==2.32.4",
   "testcontainer-python-rabbitmq==0.4.*",
 ]
 urls.Changelog = "https://lorrystream.readthedocs.io/changes.html"
