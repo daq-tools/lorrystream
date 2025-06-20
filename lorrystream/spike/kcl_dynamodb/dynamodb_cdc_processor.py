@@ -15,7 +15,7 @@ import typing as t
 from amazon_kclpy import kcl
 from amazon_kclpy.v3 import processor
 from commons_codec.transform.dynamodb import DynamoCDCTranslatorCrateDB
-from cratedb_toolkit.util import DatabaseAdapter
+from cratedb_toolkit.util.database import DatabaseAdapter
 
 logger = logging.getLogger(__name__)
 
