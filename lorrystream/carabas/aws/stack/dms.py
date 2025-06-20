@@ -514,12 +514,13 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         group.add(target_endpoint)
 
         replication_settings = {
+            # Configure `BeforeImage` settings.
             # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.BeforeImage.html
-            "BeforeImageSettings": {
-                "EnableBeforeImage": True,
-                "FieldName": "before-image",
-                "ColumnFilter": "pk-only",
-            },
+            # "BeforeImageSettings": {  # noqa: ERA001
+            #     "EnableBeforeImage": True,  # noqa: ERA001
+            #     "FieldName": "before-image",  # noqa: ERA001
+            #     "ColumnFilter": "pk-only",  # noqa: ERA001
+            # },  # noqa: ERA001
             # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.Logging.html
             "Logging": {
                 "EnableLogging": True,
@@ -549,6 +550,31 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                     # {"Id": "VALIDATOR", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},  # noqa: ERA001
                     {"Id": "VALIDATOR_EXT", "Severity": "LOGGER_SEVERITY_DETAILED_DEBUG"},
                 ],
+            },
+            # Control creation of system tables `awsdms_status`, `awsdms_suspended_tables`, `awsdms_history`,
+            # and `awsdms_apply_exceptions`.
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.ControlTable.html
+            "ControlTablesSettings": {
+                "CommitPositionTableEnabled": False,
+                "FullLoadExceptionTableEnabled": True,
+                "HistoryTableEnabled": True,
+                "StatusTableEnabled": True,
+                "SuspendedTablesTableEnabled": True,
+            },
+            # Control behaviour on errors.
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.ErrorHandling.html
+            "ErrorBehavior": {
+                # Set this option to `true` to cause a task to fail when the table mappings defined for a
+                # task find no tables when the task starts. The default is `true`.
+                #
+                # This means when starting a replication task on `public.%`, and the schema does not include
+                # any tables, the replication task will bail out like:
+                #
+                # No tables were found at task initialization. Either the selected table(s) or schemas(s) no
+                # longer exist or no match was found for the table selection pattern(s). If you would like to
+                # start a Task that does not initially capture any tables, set Task Setting
+                # `FailOnNoTablesCaptured` to `false` and restart task.
+                "FailOnNoTablesCaptured": False,
             },
         }
 
