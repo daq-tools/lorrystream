@@ -107,10 +107,8 @@ optional-dependencies.all = [
   "lorrystream[carabas]",
 ]
 optional-dependencies.carabas = [
-  "aiobotocore==2.13.*",                                                       # for async-kinesis
-  "async-kinesis @ git+https://github.com/daq-tools/async-kinesis@stream-arn",
+  "async-kinesis<3",
   "aws-lambda-layer<0.6",
-  "boto3>=1.34,<1.36",                                                         # for async-kinesis
   "cottonformation<1.2",
   "localstack[base-runtime]<3.8",
 ]
@@ -133,7 +131,7 @@ optional-dependencies.docs = [
   "sphinxext-opengraph<1",
 ]
 optional-dependencies.ingestr = [
-  "ingestr @ git+https://github.com/crate-workbench/ingestr@kinesis-stream-arn",
+  "async-kinesis<3",
 ]
 optional-dependencies.release = [
   "build<2",
