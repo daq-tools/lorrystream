@@ -483,6 +483,10 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
             p_Username=self.db_username,
             p_Password=self.db_password,
             p_DatabaseName="postgres",
+            p_PostgreSqlSettings={
+                "MapBooleanAsBoolean": True,
+                "MapJsonbAsClob": True,
+            },
             p_ExtraConnectionAttributes=json.dumps(
                 {
                     "CaptureDdls": True,
@@ -576,6 +580,16 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
                 # start a Task that does not initially capture any tables, set Task Setting
                 # `FailOnNoTablesCaptured` to `false` and restart task.
                 "FailOnNoTablesCaptured": False,
+            },
+            # Target metadata task settings
+            # https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.CustomizingTasks.TaskSettings.TargetMetadata.html
+            "TargetMetadata": {
+                "SupportLobs": True,
+                "FullLobMode": True,
+                "LobChunkSize": 64,
+                # "InlineLobMaxSize": 0,  # noqa: ERA001
+                # "LobMaxSize": 32,  # noqa: ERA001
+                # "LimitedSizeLobMode": True,  # noqa: ERA001
             },
         }
 
