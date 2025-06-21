@@ -290,7 +290,8 @@ class RDSPostgreSQLDMSKinesisPipe(KinesisProcessorStack):
         self._stream_source = kinesis.Stream(
             id="KinesisStream",
             p_Name=f"{self.env_name}-stream",
-            p_StreamModeDetails={"rp_StreamMode": "ON_DEMAND"},
+            p_ShardCount=1,
+            p_StreamModeDetails={"rp_StreamMode": "PROVISIONED"},
         )
         stream_arn = cf.Output(
             "StreamArn",
