@@ -1,6 +1,8 @@
 # Changelog
 
 ## in progress
+
+## 2025-06-21 v0.0.7
 - DMS: Update from engine version 3.5.2 to 3.6.1
 - Kinesis: Improve example subscriber program
 - Kinesis: Updated to `async-kinesis-2.0.0`
