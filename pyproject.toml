@@ -95,7 +95,7 @@ dependencies = [
   "influxdb-client[ciso]",
   "orjson",
   "paho-mqtt",
-  "pandas<2.3",
+  "pandas<2.4",
   "pika<1.4",
   "simplejson<4",
   "sqlalchemy-cratedb>=0.38.0",
