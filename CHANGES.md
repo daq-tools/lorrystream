@@ -1,6 +1,8 @@
 # Changelog
 
 ## in progress
+
+## 2025-07-01 v0.0.9
 - DMS: Updated to commons-codec 0.0.24
 
 ## 2025-06-23 v0.0.8
