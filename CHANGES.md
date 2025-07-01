@@ -1,6 +1,7 @@
 # Changelog
 
 ## in progress
+- DMS: Updated to commons-codec 0.0.24
 
 ## 2025-06-23 v0.0.8
 - DMS: Improved stack configuration and replication settings
