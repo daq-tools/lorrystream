@@ -36,8 +36,8 @@ import sys
 
 import sqlalchemy as sa
 from commons_codec.exception import UnknownOperationError
-from commons_codec.model import ColumnTypeMapStore
-from commons_codec.transform.aws_dms import DMSTranslatorCrateDB
+from commons_codec.model import ColumnMappingStrategy, ColumnTypeMapStore
+from commons_codec.transform.aws_dms import DMSTranslatorCrateDB, DMSTranslatorCrateDBRecordFactory
 from commons_codec.transform.dynamodb import DynamoDBCDCTranslator
 from sqlalchemy.util import asbool
 
@@ -76,7 +76,9 @@ except Exception as ex:
 
 # TODO: Automatically create destination table.
 # TODO: Propagate mapping definitions and other settings.
+# TODO: Propagate column mapping strategy.
 if MESSAGE_FORMAT == "dms":
+    DMSTranslatorCrateDBRecordFactory.DEFAULT_MAPPING_STRATEGY = ColumnMappingStrategy.UNIVERSAL
     cdc = DMSTranslatorCrateDB(column_types=column_types)
 elif MESSAGE_FORMAT == "dynamodb":
     cdc = DynamoDBCDCTranslator(table_name=SINK_TABLE)

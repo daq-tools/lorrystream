@@ -120,7 +120,7 @@ def test_kinesis_dms_cratedb_lambda_basic(mocker, cratedb, reset_handler):
     column_types = ColumnTypeMapStore().add(
         table=TableAddress(schema="public", table="foo"),
         column="attributes",
-        type_=ColumnType.MAP,
+        type_=ColumnType.OBJECT,
     )
 
     # Configure environment variables.
@@ -142,5 +142,7 @@ def test_kinesis_dms_cratedb_lambda_basic(mocker, cratedb, reset_handler):
 
     records = cratedb.database.run_sql('SELECT * FROM "public"."foo";', records=True)
     assert records[0] == {
-        "data": {"id": 46, "name": "Jane", "age": 31, "attributes": {"baz": "qux"}},
+        "pk": {"id": 46},
+        "data": {"name": "Jane", "age": 31, "attributes": {"baz": "qux"}},
+        "aux": {},
     }
