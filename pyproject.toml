@@ -113,7 +113,7 @@ optional-dependencies.carabas = [
   "localstack[base-runtime]<4.6",
 ]
 optional-dependencies.develop = [
-  "black<25",
+  "black<26",
   "mypy<1.17",
   "pika-stubs<0.2",
   "poethepoet<1",
