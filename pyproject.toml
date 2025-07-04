@@ -110,7 +110,7 @@ optional-dependencies.carabas = [
   "async-kinesis<3",
   "aws-lambda-layer<0.6",
   "cottonformation<1.2",
-  "localstack[base-runtime]<4.6",
+  "localstack[base-runtime]<4.7",
 ]
 optional-dependencies.develop = [
   "black<26",
