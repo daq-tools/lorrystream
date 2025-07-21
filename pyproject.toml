@@ -122,7 +122,7 @@ optional-dependencies.develop = [
   "validate-pyproject<1",
 ]
 optional-dependencies.docs = [
-  "furo==2024.1.29",
+  "furo==2025.7.19",
   "myst-parser[linkify]>=0.18,<5",
   "sphinx-autobuild==2024.10.3",   # Newer versions stopped "watching" appropriately?
   "sphinx-copybutton",
