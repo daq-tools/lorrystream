@@ -142,7 +142,7 @@ optional-dependencies.test = [
   "localstack-utils<1.1",
   "pytest<9",
   "pytest-asyncio-cooperative<0.41",
-  "pytest-cov<7",
+  "pytest-cov<8",
   "pytest-mock<4",
   "pytest-mqtt>=0.4.2,<0.6",
   "testcontainer-python-rabbitmq==0.4.*",
