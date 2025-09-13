@@ -144,7 +144,7 @@ optional-dependencies.test = [
   "pytest-asyncio-cooperative<0.41",
   "pytest-cov<8",
   "pytest-mock<4",
-  "pytest-mqtt>=0.4.2,<0.6",
+  "pytest-mqtt>=0.4.2,<0.7",
   "testcontainer-python-rabbitmq==0.4.*",
 ]
 urls.Changelog = "https://lorrystream.readthedocs.io/changes.html"
