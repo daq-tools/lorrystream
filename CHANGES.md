@@ -1,6 +1,7 @@
 # Changelog
 
 ## in progress
+- OCI: Updated base image to `python:3.14-slim-trixie`
 
 ## 2025-07-01 v0.0.9
 - DMS: Updated to commons-codec 0.0.24
