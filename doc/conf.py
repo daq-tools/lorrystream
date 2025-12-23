@@ -9,7 +9,7 @@
 # ruff: noqa: ERA001
 
 project = "LorryStream"
-copyright = "2023-2024, The Panodata Developers"  # noqa: A001
+copyright = "2023-2025, The Panodata Developers"  # noqa: A001
 author = "The Panodata Developers"
 
 # -- General configuration ---------------------------------------------------
