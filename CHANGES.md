@@ -1,7 +1,9 @@
 # Changelog
 
 ## in progress
+- CI: Validated on Python 3.14
 - OCI: Updated base image to `python:3.14-slim-trixie`
+- License: Switched from LGPL to MIT
 
 ## 2025-07-01 v0.0.9
 - DMS: Updated to commons-codec 0.0.24
