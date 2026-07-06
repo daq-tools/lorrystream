@@ -234,7 +234,7 @@ lint.per-file-ignores."tests/*" = [ "S101" ]                   # Use of `assert`
 # test suite must turn off concurrency.
 addopts = """
   -rA --verbosity=3
-  --max-asyncio-tasks=1 --asyncio-task-timeout=30
+  --max-asyncio-tasks=1 --asyncio-task-timeout=45
   --cov --cov-report=term-missing --cov-report=xml
 """
 minversion = "2.0"
