@@ -111,7 +111,7 @@ optional-dependencies.carabas = [
   "async-kinesis<3",
   "aws-lambda-layer<0.6",
   "cottonformation<1.2",
-  "localstack[base-runtime]<4.11",
+  "localstack<4.11",
 ]
 optional-dependencies.develop = [
   "black<26",
@@ -216,8 +216,6 @@ lint.select = [
 lint.extend-ignore = [
   # zip() without an explicit strict= parameter
   "B905",
-  # df is a bad variable name. Be kinder to your future self.
-  "PD901",
   # Unnecessary variable assignment before `return` statement
   "RET504",
   # Unnecessary `elif` after `return` statement
