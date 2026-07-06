@@ -19,7 +19,7 @@ class RabbitMQContainerPlus(KeepaliveContainer, RabbitMqContainer):
 
 @pytest.fixture
 def rabbitmq_service(request: FixtureRequest) -> t.Generator[RabbitMqContainer, None, None]:
-    config = RabbitMQContainerPlus()
+    config = RabbitMQContainerPlus(image="docker.io/rabbitmq:3")
     with config as container:
         connection = pika.BlockingConnection(container.get_connection_params())
         yield container, connection
