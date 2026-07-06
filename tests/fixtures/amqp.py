@@ -18,19 +18,20 @@ class RabbitMQContainerPlus(KeepaliveContainer, RabbitMqContainer):
 
 
 @pytest.fixture
-def rabbitmq_service(request: FixtureRequest) -> t.Generator[RabbitMqContainer, None, None]:
-    config = RabbitMQContainerPlus(image="docker.io/rabbitmq:3")
-    with config as container:
-        connection = pika.BlockingConnection(container.get_connection_params())
-        yield container, connection
+def rabbitmq_service(request: FixtureRequest) -> t.Tuple[RabbitMqContainer, pika.BlockingConnection]:
+    container = RabbitMQContainerPlus(image="docker.io/rabbitmq:3")
+    container.start()
+    container.readiness_probe()
+    connection = pika.BlockingConnection(container.get_connection_params())
+    return container, connection
 
 
 @pytest.fixture
-def rabbitmq(rabbitmq_service) -> t.Generator[RabbitMqContainer, None, None]:
+def rabbitmq(rabbitmq_service) -> t.Tuple[RabbitMqContainer, pika.BlockingConnection]:
     _, connection = rabbitmq_service
     channel = connection.channel()
     channel.queue_delete("t-queue")
     channel.exchange_delete("t-exchange")
     connection.process_data_events(0.01)
     channel.close()
-    yield rabbitmq_service
+    return rabbitmq_service

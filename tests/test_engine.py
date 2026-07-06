@@ -41,14 +41,14 @@ class engine_single_shot:
 
 
 @pytest.mark.asyncio_cooperative
-async def test_amqp_to_sql(rabbitmq: t.Tuple[pika.BlockingConnection, RabbitMqContainer], cratedb):
+async def test_amqp_to_sql(rabbitmq: t.Tuple[RabbitMqContainer, pika.BlockingConnection], cratedb):
 
     rabbitmq_container: RabbitMqContainer
     rabbitmq_connection: pika.BlockingConnection
     rabbitmq_container, rabbitmq_connection = rabbitmq
 
     amqp_host = rabbitmq_container.get_container_host_ip()
-    amqp_port = rabbitmq_container.get_exposed_port(5672)
+    amqp_port = rabbitmq_container.get_exposed_port(rabbitmq_container.port)
     amqp_url = f"amqp://guest:guest@{amqp_host}:{amqp_port}"
     database_url = cratedb.get_connection_url()
 
