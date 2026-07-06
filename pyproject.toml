@@ -7,7 +7,10 @@ requires = [
 
 [project]
 name = "lorrystream"
-description = "A lightweight and polyglot stream-processing library, to be used as a data backplane-, message relay-, or pipeline-subsystem."
+description = """\
+  A lightweight and polyglot stream-processing library, to be used as a data backplane-, message relay-, or \
+  pipeline-subsystem.\
+  """
 readme = "README.rst"
 keywords = [
   "amqp",
@@ -159,13 +162,12 @@ entry-points."streamz.sinks".dataframe_to_sql = "lorrystream.streamz.sinks:dataf
 entry-points."streamz.sources".from_amqp = "lorrystream.streamz.sources:from_amqp"
 entry-points."streamz.sources".from_mqtt_plus = "lorrystream.streamz.sources:from_mqtt_plus"
 
-[tool.setuptools.packages.find]
-namespaces = false
+[tool.setuptools]
+packages.find.namespaces = false
 
 # ===================
 # Tasks configuration
 # ===================
-
 [tool.black]
 line-length = 120
 force-exclude = '''
@@ -175,7 +177,6 @@ force-exclude = '''
 
 [tool.ruff]
 line-length = 120
-
 extend-exclude = [
   "amqp-to-mqtt.py",
   "dms_next\\.py$",
@@ -184,7 +185,6 @@ extend-exclude = [
   "lorrystream/streamz/amqp_blocking.py",
   "workbench.py",
 ]
-
 lint.select = [
   # Builtins
   "A",
@@ -212,7 +212,6 @@ lint.select = [
   # flake8-2020
   "YTT",
 ]
-
 lint.extend-ignore = [
   # zip() without an explicit strict= parameter
   "B905",
@@ -221,49 +220,11 @@ lint.extend-ignore = [
   # Unnecessary `elif` after `return` statement
   "RET505",
 ]
-
-lint.per-file-ignores."amazon_kclpy_helper.py" = [ "T201" ]    # Allow `print`
-lint.per-file-ignores."examples/*" = [ "T201" ]                # Allow `print`
-lint.per-file-ignores."lorrystream/util/about.py" = [ "T201" ] # Allow `print`
-lint.per-file-ignores."test_*.py" = [ "S101" ]                 # Use of `assert` detected
-lint.per-file-ignores."tests/*" = [ "S101" ]                   # Use of `assert` detected
-
-[tool.pytest.ini_options]
-# Because synchronous and asynchronous tests are mixed,
-# and maybe because of woes with pytest fixtures, the
-# test suite must turn off concurrency.
-addopts = """
-  -rA --verbosity=3
-  --max-asyncio-tasks=1 --asyncio-task-timeout=45
-  --cov --cov-report=term-missing --cov-report=xml
-"""
-minversion = "2.0"
-log_level = "DEBUG"
-log_cli_level = "DEBUG"
-log_format = "%(asctime)-15s [%(name)-24s] %(levelname)-8s: %(message)s"
-testpaths = [
-  "lorrystream",
-  "tests",
-]
-xfail_strict = true
-markers = [
-  "slow",
-]
-
-[tool.coverage.run]
-branch = false
-omit = [
-  "tests/*",
-  "lorrystream/carabas/aws/function/zip.py",
-  "lorrystream/spike/*",
-  # It is tested, but code coverage tracking does not work well.
-  "lorrystream/process/kinesis_cratedb_lambda.py",
-]
-source = [ "lorrystream" ]
-
-[tool.coverage.report]
-fail_under = 0
-show_missing = true
+lint.per-file-ignores."amazon_kclpy_helper.py" = [ "T201" ]  # Allow `print`
+lint.per-file-ignores."examples/*" = [ "T201" ]  # Allow `print`
+lint.per-file-ignores."lorrystream/util/about.py" = [ "T201" ]  # Allow `print`
+lint.per-file-ignores."test_*.py" = [ "S101" ]  # Use of `assert` detected
+lint.per-file-ignores."tests/*" = [ "S101" ]  # Use of `assert` detected
 
 [tool.mypy]
 packages = [ "lorrystream" ]
@@ -272,59 +233,84 @@ exclude = [
   "lorrystream/streamz/amqp_async.py",
   "lorrystream/streamz/amqp_blocking.py",
 ]
-check_untyped_defs = true
 ignore_missing_imports = true
+check_untyped_defs = true
 implicit_optional = true
+overrides = [ { module = "lorrystream.carabas.aws.cf.*", follow_imports = "silent" } ]
 install_types = true
 non_interactive = true
 
-[[tool.mypy.overrides]]
-module = "lorrystream.carabas.aws.cf.*"
-follow_imports = "silent"
+[tool.pytest]
+ini_options.minversion = "2.0"
+ini_options.testpaths = [
+  "lorrystream",
+  "tests",
+]
+# Because synchronous and asynchronous tests are mixed,
+# and maybe because of woes with pytest fixtures, the
+# test suite must turn off concurrency.
+ini_options.addopts = """
+  -rA --verbosity=3
+  --max-asyncio-tasks=1 --asyncio-task-timeout=45
+  --cov --cov-report=term-missing --cov-report=xml
+"""
+ini_options.markers = [
+  "slow",
+]
+ini_options.xfail_strict = true
+ini_options.log_format = "%(asctime)-15s [%(name)-24s] %(levelname)-8s: %(message)s"
+ini_options.log_level = "DEBUG"
+ini_options.log_cli_level = "DEBUG"
 
-[tool.versioningit.vcs]
-method = "git"
-default-tag = "0.0.0"
+[tool.coverage]
+run.branch = false
+run.omit = [
+  "lorrystream/carabas/aws/function/zip.py",
+  # It is tested, but code coverage tracking does not work well.
+  "lorrystream/process/kinesis_cratedb_lambda.py",
+  "lorrystream/spike/*",
+  "tests/*",
+]
+run.source = [ "lorrystream" ]
+report.fail_under = 0
+report.show_missing = true
 
+[tool.poe]
 # ===================
 # Tasks configuration
 # ===================
-
-[tool.poe.tasks]
-
-check = [
+tasks.check = [
   "lint",
   "test",
 ]
-
-docs-autobuild = [
+tasks.docs-autobuild = [
   { cmd = "sphinx-autobuild --open-browser --watch lorrystream doc doc/_build" },
 ]
-docs-html = [
+tasks.docs-html = [
   { cmd = "sphinx-build -W --keep-going doc doc/_build" },
 ]
-docs-linkcheck = [
+tasks.docs-linkcheck = [
   { cmd = "sphinx-build -W --keep-going -b linkcheck doc doc/_build" },
 ]
-
-format = [
+tasks.format = [
   { cmd = "black ." },
   # Configure Ruff not to auto-fix (remove!):
   # unused imports (F401), unused variables (F841), `print` statements (T201), and commented-out code (ERA001).
   { cmd = "ruff check --fix --ignore=ERA --ignore=F401 --ignore=F841 --ignore=T20 --ignore=ERA001 ." },
   { cmd = "pyproject-fmt --keep-full-version pyproject.toml" },
 ]
-
-lint = [
+tasks.lint = [
   { cmd = "ruff check ." },
   { cmd = "black --check ." },
   { cmd = "validate-pyproject pyproject.toml" },
   { cmd = "mypy" },
 ]
-
-release = [
+tasks.release = [
   { cmd = "python -m build" },
   { cmd = "twine upload --skip-existing dist/*" },
 ]
+tasks.test = { cmd = "pytest" }
 
-test = { cmd = "pytest" }
+[tool.versioningit]
+vcs.method = "git"
+vcs.default-tag = "0.0.0"
