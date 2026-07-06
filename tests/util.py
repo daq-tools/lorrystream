@@ -1,6 +1,3 @@
-# Copyright (c) 2013-2023, The Kotori developers and contributors.
-# Distributed under the terms of the LGPLv3 license, see LICENSE.
-
 import random
 import typing as t
 from pathlib import Path
