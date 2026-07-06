@@ -5,12 +5,12 @@ import pika
 import pytest
 from _pytest.fixtures import FixtureRequest
 from cratedb_toolkit.testing.testcontainers.util import KeepaliveContainer
-from testcontainer_python_rabbitmq import RabbitMQContainer
+from testcontainers.rabbitmq import RabbitMqContainer
 
 from lorrystream.util.data import asbool
 
 
-class RabbitMQContainerPlus(KeepaliveContainer, RabbitMQContainer):
+class RabbitMQContainerPlus(KeepaliveContainer, RabbitMqContainer):
     KEEPALIVE = asbool(os.environ.get("CRATEDB_KEEPALIVE", os.environ.get("TC_KEEPALIVE", False)))
 
     def _configure(self) -> None:
@@ -18,22 +18,15 @@ class RabbitMQContainerPlus(KeepaliveContainer, RabbitMQContainer):
 
 
 @pytest.fixture
-def rabbitmq_service(request: FixtureRequest) -> t.Generator[RabbitMQContainer, None, None]:
+def rabbitmq_service(request: FixtureRequest) -> t.Generator[RabbitMqContainer, None, None]:
     config = RabbitMQContainerPlus()
-    credentials = pika.PlainCredentials(username="guest", password="guest")  # noqa: S106
     with config as container:
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=container.get_container_host_ip(),
-                port=container.get_amqp_port(),
-                credentials=credentials,
-            )
-        )
+        connection = pika.BlockingConnection(container.get_connection_params())
         yield container, connection
 
 
 @pytest.fixture
-def rabbitmq(rabbitmq_service) -> t.Generator[RabbitMQContainer, None, None]:
+def rabbitmq(rabbitmq_service) -> t.Generator[RabbitMqContainer, None, None]:
     _, connection = rabbitmq_service
     channel = connection.channel()
     channel.queue_delete("t-queue")
