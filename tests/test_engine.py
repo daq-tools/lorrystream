@@ -8,7 +8,7 @@ import typing as t
 
 import pika
 import pytest
-from testcontainer_python_rabbitmq import RabbitMQContainer
+from testcontainers.rabbitmq import RabbitMqContainer
 
 from lorrystream.core import ChannelFactory, Engine
 
@@ -41,9 +41,9 @@ class engine_single_shot:
 
 
 @pytest.mark.asyncio_cooperative
-async def test_amqp_to_sql(rabbitmq: t.Tuple[pika.BlockingConnection, RabbitMQContainer], cratedb):
+async def test_amqp_to_sql(rabbitmq: t.Tuple[pika.BlockingConnection, RabbitMqContainer], cratedb):
 
-    rabbitmq_container: RabbitMQContainer
+    rabbitmq_container: RabbitMqContainer
     rabbitmq_connection: pika.BlockingConnection
     rabbitmq_container, rabbitmq_connection = rabbitmq
 
