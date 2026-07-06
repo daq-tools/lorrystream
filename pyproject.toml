@@ -11,7 +11,7 @@ description = """\
   A lightweight and polyglot stream-processing library, to be used as a data backplane-, message relay-, or \
   pipeline-subsystem.\
   """
-readme = "README.rst"
+readme = "README.md"
 keywords = [
   "amqp",
   "data",
@@ -24,10 +24,9 @@ keywords = [
   "sql",
   "stream",
 ]
-license = { text = "LGPL 3, EUPL 1.2" }
+license = "MIT"
 authors = [
   { name = "Andreas Motl", email = "andreas.motl@panodata.org" },
-  { name = "Richard Pobering", email = "richard.pobering@panodata.org" },
 ]
 requires-python = ">=3.9"
 classifiers = [
@@ -42,8 +41,6 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
   "Intended Audience :: Telecommunications Industry",
-  "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",

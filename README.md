@@ -201,7 +201,7 @@ ready to start hacking.
 
 ### License
 
-The project is licensed under the terms of the LGPL license, see
+The project is licensed under the terms of the MIT license, see
 [LICENSE].
 
 ### Prior art
