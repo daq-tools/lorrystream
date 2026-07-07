@@ -142,7 +142,7 @@ optional-dependencies.release = [
 optional-dependencies.test = [
   "cratedb-toolkit[testing]>=0.0.20",
   "localstack-utils<1.1",
-  "pytest<9",
+  "pytest<10",
   "pytest-asyncio-cooperative<0.41",
   "pytest-cov<8",
   "pytest-mock<4",
