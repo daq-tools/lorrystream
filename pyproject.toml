@@ -98,7 +98,7 @@ dependencies = [
   "paho-mqtt",
   "pandas<2.4",
   "pika<1.5",
-  "simplejson<4",
+  "simplejson<5",
   "sqlalchemy-cratedb>=0.38.0",
   "streamz",
   "tomli",
