@@ -32,7 +32,7 @@ def isUp(host, port):
 @pytest.fixture(scope="session")
 def localstack_service():
     if not isUp("localhost", 4566):
-        startup_localstack(tag="3.6")
+        startup_localstack(tag="4.14")
     yield
     if not asbool(os.environ.get("TC_KEEPALIVE")):
         stop_localstack()
