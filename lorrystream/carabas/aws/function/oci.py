@@ -100,27 +100,22 @@ class LambdaPythonImage:
 
         # Render `Dockerfile` snippet to process a `requirements.txt` file.
         if self.requirements_file is not None:
-            requirements = dedent(
-                """
+            requirements = dedent("""
             # Copy requirements.txt
             COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
             # Install the specified packages
             RUN pip install -r requirements.txt
-            """
-            )
+            """)
 
         # Render `Dockerfile` snippet to copy a single-file entrypoint file.
         if self.entrypoint_file is not None:
-            entrypoint = dedent(
-                f"""
+            entrypoint = dedent(f"""
             # Copy function code
             COPY {self.entrypoint_file.name} ${{LAMBDA_TASK_ROOT}}
-            """
-            )
+            """)
 
-        dockerfile = dedent(
-            f"""
+        dockerfile = dedent(f"""
         FROM {self.oci_baseimage}:{self.python_version}
 
         # Install Git, it is needed for installing Python projects from GitHub.
@@ -139,8 +134,7 @@ class LambdaPythonImage:
 
         # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
         CMD [ "{self.entrypoint_handler}" ]
-        """
-        ).strip()
+        """).strip()
 
         return dockerfile
 

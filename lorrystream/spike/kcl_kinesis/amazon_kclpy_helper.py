@@ -16,6 +16,7 @@ This script provides two utility functions:
         and --properties argument and optionally takes any number of --path arguments to prepend
         to the classpath that it generates for the command.
 """
+
 from __future__ import print_function
 
 import argparse

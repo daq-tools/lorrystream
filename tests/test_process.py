@@ -32,15 +32,13 @@ def test_kinesis_dynamodb_cratedb_lambda_basic(mocker, cratedb, reset_handler):
     mocker.patch.dict(os.environ, handler_environment)
 
     # Provision CrateDB.
-    cratedb.database.run_sql(
-        """
+    cratedb.database.run_sql("""
         CREATE TABLE "testdrive-dynamodb-cdc" (
             pk OBJECT(STRICT) AS ("device" STRING PRIMARY KEY, "timestamp" STRING PRIMARY KEY),
             data OBJECT(DYNAMIC),
             aux OBJECT(IGNORED)
         );
-    """
-    )
+    """)
 
     # Invoke Lambda handler.
     from lorrystream.process.kinesis_cratedb_lambda import handler
@@ -79,15 +77,13 @@ def test_kinesis_dynamodb_cratedb_lambda_batch(mocker, cratedb, reset_handler):
     mocker.patch.dict(os.environ, handler_environment)
 
     # Provision CrateDB.
-    cratedb.database.run_sql(
-        """
+    cratedb.database.run_sql("""
         CREATE TABLE "testdrive-dynamodb-cdc" (
             pk OBJECT(STRICT) AS ("device" STRING PRIMARY KEY, "timestamp" STRING PRIMARY KEY),
             data OBJECT(DYNAMIC),
             aux OBJECT(IGNORED)
         );
-    """
-    )
+    """)
 
     # Invoke Lambda handler.
     from lorrystream.process.kinesis_cratedb_lambda import handler

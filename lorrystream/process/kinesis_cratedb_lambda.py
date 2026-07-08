@@ -18,6 +18,7 @@ Resources:
 - https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis-example.html
 - https://docs.aws.amazon.com/lambda/latest/dg/python-logging.html
 """
+
 # In order to run, this module/program needs the following
 # 3rd party libraries, defined using inline script metadata.
 #
