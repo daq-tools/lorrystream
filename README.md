@@ -224,7 +224,7 @@ the same or similar goals like LorryStream.
 [Create an issue]: https://github.com/daq-tools/lorrystream/issues
 [Dask]: https://github.com/dask/dask
 [Dataflow]: https://en.wikipedia.org/wiki/Dataflow
-[development sandbox]: https://github.com/daq-tools/lorrystream/blob/main/doc/development.rst
+[development sandbox]: https://lorrystream.readthedocs.io/development.html
 [FBP]: https://en.wikipedia.org/wiki/Flow-based_programming
 [Flow-based Programming]: https://jpaulm.github.io/fbp/
 [fsspec]: https://pypi.org/project/fsspec/
@@ -233,7 +233,7 @@ the same or similar goals like LorryStream.
 [Kahn]: https://github.com/maritime-labs/kahn
 [Kotori]: https://github.com/daq-tools/kotori
 [LICENSE]: https://github.com/daq-tools/lorrystream/blob/main/LICENSE
-[list of other projects]: https://github.com/daq-tools/lorrystream/blob/main/doc/prior-art.rst
+[list of other projects]: https://lorrystream.readthedocs.io/prior-art.html
 [Luftdatenpumpe]: https://github.com/earthobservations/luftdatenpumpe
 [managed on GitHub]: https://github.com/daq-tools/lorrystream
 [Matthew Rocklin]: https://github.com/mrocklin
