@@ -16,6 +16,12 @@ It is conceived to generalize and improve the corresponding subsystems
 of programs and frameworks like [Kotori], [Wetterdienst], [Luftdatenpumpe],
 [amqp-forward], [ttnlogger], [Kahn], or [mqttwarn].
 
+:::{tip}
+The authors recommend [omniload], which provides connectivity for AMQP,
+AWS SQS, IBM MQ, MQTT, NATS, and ZeroMQ through the [mq-bridge] Rust
+library to access different stream and message queues in a polyglot way.
+Please refer to the [omniload mq-bridge documentation].
+:::
 
 ## Synopsis
 
@@ -217,6 +223,8 @@ the same or similar goals like LorryStream.
 - [Matthew Rocklin], [Christopher J. 'CJ' Wright], and [Chinmay Chandak]
   for conceiving [Streamz].
 
+- [Marco Mengelkoch] for conceiving [mq-bridge].
+
 
 [amqp-forward]: https://github.com/daq-tools/amqp-forward
 [Chinmay Chandak]: https://github.com/chinmaychandak
@@ -236,8 +244,12 @@ the same or similar goals like LorryStream.
 [list of other projects]: https://lorrystream.readthedocs.io/prior-art.html
 [Luftdatenpumpe]: https://github.com/earthobservations/luftdatenpumpe
 [managed on GitHub]: https://github.com/daq-tools/lorrystream
+[Marco Mengelkoch]: https://github.com/marcomq/
 [Matthew Rocklin]: https://github.com/mrocklin
+[mq-bridge]: https://github.com/marcomq/mq-bridge
 [mqttwarn]: https://github.com/jpmens/mqttwarn
+[omniload]: https://omniload.readthedocs.io/
+[omniload mq-bridge documentation]: https://omniload.readthedocs.io/supported-sources/mqbridge.html
 [pandas]: https://pandas.pydata.org/
 [socat]: http://www.dest-unreach.org/socat/
 [SQLAlchemy]: https://pypi.org/project/SQLAlchemy/
