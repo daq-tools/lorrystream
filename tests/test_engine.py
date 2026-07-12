@@ -37,7 +37,7 @@ class engine_single_shot:
         return False
 
 
-@pytest.mark.asyncio_cooperative
+@pytest.mark.asyncio
 async def test_amqp_to_sql(rabbitmq: t.Tuple[RabbitMqContainer, pika.BlockingConnection], cratedb):
 
     rabbitmq_container: RabbitMqContainer
@@ -69,7 +69,7 @@ async def test_amqp_to_sql(rabbitmq: t.Tuple[RabbitMqContainer, pika.BlockingCon
     assert cratedb.database.count_records("testdrive-amqp") == 2
 
 
-@pytest.mark.asyncio_cooperative
+@pytest.mark.asyncio
 async def test_mqtt_to_sql(mosquitto, cratedb, capmqtt):
 
     database_url = cratedb.get_connection_url()
