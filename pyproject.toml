@@ -115,7 +115,7 @@ optional-dependencies.carabas = [
 ]
 optional-dependencies.develop = [
   "black<27",
-  "mypy<2.3",
+  "mypy<2.4",
   "pika-stubs<0.2",
   "poethepoet<1",
   "pyproject-fmt<3",
