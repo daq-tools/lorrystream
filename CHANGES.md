@@ -1,6 +1,7 @@
 # Changelog
 
 ## in progress
+- Verified support on Python 3.15
 
 ## 2026-07-06 v0.0.10
 - CI: Validated on Python 3.14
