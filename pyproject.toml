@@ -140,6 +140,7 @@ optional-dependencies.release = [
   "twine<8",
 ]
 optional-dependencies.test = [
+  "boto3",
   "cratedb-toolkit[testing]>=0.0.20",
   "localstack-utils<1.1",
   "pytest<10",
