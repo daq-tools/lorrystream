@@ -4,7 +4,7 @@
 # - https://vsupalov.com/buildkit-cache-mount-dockerfile/
 # - https://github.com/FernandoMiguel/Buildkit#mounttypecache
 
-FROM python:3.14-slim-trixie
+FROM python:3.15-slim-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=linux
