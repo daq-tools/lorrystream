@@ -1,6 +1,8 @@
 # Changelog
 
 ## in progress
+
+## 2026-11-04 v0.0.11
 - Verified support on Python 3.15
 
 ## 2026-07-06 v0.0.10
