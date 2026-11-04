@@ -4,12 +4,13 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
-updates:
 
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
     schedule:
       interval: "daily"
+    versioning-strategy: "widen"
 
   - package-ecosystem: "docker"
     directory: "/release/oci"
